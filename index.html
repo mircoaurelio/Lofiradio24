@@ -703,7 +703,7 @@
 
     <!-- Spotify Canvas: looping video background (mobile, fades in after 30s) -->
     <div class="canvas-video-wrap" id="canvas-container">
-        <video class="canvas-video" id="canvas-video" src="video.mp4" loop muted playsinline preload="auto"></video>
+        <video class="canvas-video" id="canvas-video" src="video.mp4" loop muted playsinline preload="auto" autoplay></video>
         <div class="canvas-vignette-top"></div>
         <div class="canvas-vignette-radial"></div>
         <div class="canvas-vignette-bottom"></div>
@@ -1262,7 +1262,7 @@
     // Nodes
     let radioGroup, stopClick; 
     let keys, pad, bass, lead, accordion, kick, snare, hihat, foley;
-    let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter;
+    let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter, masterHighPass, bassSubCut;
     let vinylNoise, rainNoise, windNoise, filterLFO, padVolumeLFO, analyser;
     let autoPanner, tremolo, vibrato;
     let pageVisible = true;
@@ -1281,7 +1281,18 @@
         if (canvasVisible) return; // Already showing
         if (canvasDismissed) return; // User dismissed — don't auto-show until next track
         if (canvasTimer) clearTimeout(canvasTimer);
+        // Start video playback now (user has interacted — stream started). On mobile, play() must run in or near a user gesture; by the time we show the canvas, video will already be playing.
+        ensureCanvasVideoReady(video);
         canvasTimer = setTimeout(showCanvas, CANVAS_DELAY_MS);
+    }
+
+    /** Ensure canvas video is muted, playsinline, and playing so it autoplays on mobile when we reveal it. */
+    function ensureCanvasVideoReady(video) {
+        if (!video || window.innerWidth > 900) return;
+        video.muted = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.play().catch(function() {});
     }
 
     let canvasDismissed = false; // User manually dismissed canvas
@@ -1293,18 +1304,19 @@
         const tapZone = document.getElementById('canvas-tap-zone');
         if (!container || !video || !video.src || video.src === window.location.href) return;
         if (window.innerWidth > 900) return; // Desktop guard
-        // iOS: ensure muted and playsinline before play; load() then play after container is visible
         video.muted = true;
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
         video.currentTime = 0;
         container.classList.add('visible');
         document.body.classList.add('canvas-active');
-        // Let iOS lay out the visible container before starting playback (fixes video not showing)
+        // Do NOT call video.load() — it resets the video and iOS often blocks play() after load() when not in a user gesture. Just play().
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-                video.load();
-                video.play().catch(function() {});
+                var p = video.play();
+                if (p && typeof p.catch === 'function') p.catch(function() {});
+                // Retry once after a short delay (iOS sometimes needs a second attempt after layout)
+                if (video.paused) setTimeout(function() { video.play().catch(function() {}); }, 150);
             });
         });
         if (tapZone) tapZone.style.pointerEvents = 'auto';
@@ -1328,7 +1340,12 @@
         const overlay = document.getElementById('canvas-overlay');
         const tapZone = document.getElementById('canvas-tap-zone');
         if (container) container.classList.remove('visible');
-        if (overlay) overlay.classList.remove('visible');
+        if (overlay) {
+            overlay.classList.remove('visible');
+            // Clear scroll-driven inline styles so overlay (and its time bar) fully hides; hero time bar is the only one shown when canvas is off
+            overlay.style.opacity = '';
+            overlay.style.transform = '';
+        }
         document.body.classList.remove('canvas-active');
         if (video) video.pause();
         if (canvasTimer) { clearTimeout(canvasTimer); canvasTimer = null; }
@@ -1564,8 +1581,9 @@
         }).toDestination();
         stopClick.volume.value = -20;
 
-        limiter = new Tone.Limiter(-1).connect(radioGroup); 
-        compressor = new Tone.Compressor(-12, 3).connect(limiter);
+        limiter = new Tone.Limiter(-2.5).connect(radioGroup); 
+        masterHighPass = new Tone.Filter(38, "highpass", -24).connect(limiter); // Master: remove sub rumble that causes strange bass noise
+        compressor = new Tone.Compressor(-14, 2.5).connect(masterHighPass); // Softer ratio so bass doesn't pump
         masterFilter = new Tone.Filter(3000, "lowpass").connect(compressor);
         filterLFO = new Tone.LFO(0.05, 1500, 6000).start(); // Wide range — lets piano harmonics breathe
         filterLFO.connect(masterFilter.frequency);
@@ -1602,8 +1620,10 @@
         padVolumeLFO.connect(pad.volume);
 
         // Bass: Deep sub with punch — sine FM through lowpass for warmth + attack presence.
-        // Filter at 500Hz lets the attack transient through for hip-hop thump.
+        // Sub-cut (38Hz) removes rumble that can cause strange speaker noise; 500Hz lowpass keeps hip-hop thump.
+        bassSubCut = new Tone.Filter(38, "highpass", -24);
         const bassFilter = new Tone.Filter(500, "lowpass", -12).connect(compressor);
+        bassSubCut.connect(bassFilter);
         bass = new Tone.FMSynth({
             harmonicity: 1,
             modulationIndex: 1.2,
@@ -1612,7 +1632,7 @@
             modulation: { type: "sine" },
             modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 },
             volume: -8
-        }).connect(bassFilter); 
+        }).connect(bassSubCut); 
         lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }).connect(vibrato); 
 
         // Accordion: AM synthesis for reed-like lo-fi warmth
@@ -1834,7 +1854,8 @@
         const drumIdx = Math.floor(currentRNG() * DRUM_TONES.length);
         keys.set(KEY_PATCHES[keyIdx]);
         pad.set(PAD_PATCHES[padIdx]);
-        bass.set(BASS_PATCHES[bassIdx]);
+        const bassPatch = BASS_PATCHES[bassIdx];
+        bass.set({ ...bassPatch, modulationIndex: Math.min(bassPatch.modulationIndex || 1.2, 2) }); // Cap FM to avoid harsh/strange bass artifacts
         lead.set(LEAD_PATCHES[leadIdx]);
         accordion.set(ACCORDION_PATCHES[accIdx]);
         const ep = EFFECT_PRESETS[effectIdx];
