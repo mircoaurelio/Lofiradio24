@@ -271,6 +271,7 @@
         .queue-row.active { background: rgba(255,255,255,0.08); }
         .queue-row.active .q-title { color: var(--dynamic-color); }
         
+        .queue-header { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 12px; padding: 8px 16px 0; }
         .q-num { color: var(--text-muted); font-size: 0.9rem; }
         .q-info { display: flex; flex-direction: column; }
         .q-title { font-weight: 600; font-size: 1rem; margin-bottom: 2px; }
@@ -412,12 +413,13 @@
             .q-artist { font-size: 0.75rem; }
 
             .deck-controls { 
-                width: auto; 
-                flex-direction: row; 
-                justify-content: flex-end;
+                width: 100%;
+                flex-direction: column; 
+                align-items: stretch;
+                gap: 8px;
             }
-            .progress-container { display: none; } 
-            .deck-buttons { gap: 16px; }
+            .progress-container { display: flex; font-size: 0.7rem; min-width: 0; }
+            .deck-buttons { gap: 16px; justify-content: center; }
             .deck-btn { display: none; } 
             .deck-btn.main { display: flex; width: 44px; height: 44px; } 
             
@@ -490,12 +492,13 @@
                         <span class="badge" id="bpm-badge">80 BPM</span>
                     </div>
                     <h1 id="playlist-title">Tap Play to Start</h1>
+                    <div id="playlist-artist" class="playlist-artist" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 16px; display: none;">—</div>
                     <div class="action-row">
                         <button class="play-btn-lg" id="playBtn">
                             <svg class="icon-play show-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                         </button>
-                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Press play to start the radio</span>
+                        <span id="play-prompt" style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Press play to start the radio</span>
                     </div>
                 </div>
             </div>
@@ -565,8 +568,8 @@
     // --- METADATA (expanded for more variety so tracks feel less samey) ---
     const TITLES_A = ["Sun", "Urban", "Funky", "Cosmic", "Sunday", "Coffee", "Neon", "Happy", "Golden", "Floating", "Velvet", "Soft", "Early", "Pink", "Blue", "Warm", "Safe", "Breeze", "Mellow", "Calm", "Cozy", "Sunny", "Clear", "Bright"];
     const TITLES_B = ["Dreams", "Day", "Loop", "Groove", "Thoughts", "Vibes", "Window", "Clouds", "Station", "Memories", "Soul", "Waves", "Pages", "Lights", "Hours", "Side", "Tape", "Room", "Sky", "Mood", "Beat", "Morning", "Glow", "Light"];
-    const ARTISTS_A = ["Lo-Fi", "Chill", "Beats", "Bedroom", "Analog", "Digital", "Sleepy", "Mellow", "Jazz", "Retro", "Lazy", "Quiet", "Soft", "Deep", "Warm"];
-    const ARTISTS_B = ["Boy", "Girl", "Project", "Collective", "Hop", "Cat", "Smith", "Waves", "FM", "Tapes", "Corner", "Society", "Lab", "Room", "Band"];
+    const ARTISTS_A = ["Lo-Fi", "Chill", "Beats", "Bedroom", "Analog", "Digital", "Sleepy", "Mellow", "Jazz", "Retro", "Lazy", "Quiet", "Soft", "Deep", "Warm", "Cosmic", "Nostalgic", "Urban", "Velvet", "Blue", "Golden", "Stardust"];
+    const ARTISTS_B = ["Boy", "Girl", "Project", "Collective", "Hop", "Cat", "Smith", "Waves", "FM", "Tapes", "Corner", "Society", "Lab", "Room", "Band", "Radio", "Sounds", "Beats", "Crew", "Studio", "Arcade", "Café", "Lounge", "Atelier"];
 
     // --- CONFIG ---
     const NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -970,10 +973,10 @@
         const now = Date.now() + state.timeOffset;
         const timeRemaining = (state.trackStartTime + state.trackDuration) - now;
 
-        if (timeRemaining < 5000 && !isTransitioning) {
+        if (timeRemaining < 2500 && !isTransitioning) {
             isTransitioning = true;
-            radioGroup.gain.rampTo(0, 4); 
-            if(filterLFO) { filterLFO.max = 200; filterLFO.frequency.rampTo(0.1, 4); }
+            radioGroup.gain.rampTo(0, 1.5); 
+            if(filterLFO) { filterLFO.max = 200; filterLFO.frequency.rampTo(0.1, 1.5); }
             fadeUIText(false);
         }
 
@@ -986,7 +989,7 @@
             generateNewTrack(state.currentSeed);
             updateQueueUI();
             
-            radioGroup.gain.rampTo(1, 4);
+            radioGroup.gain.rampTo(1, 1.5);
             fadeUIText(true);
             isTransitioning = false;
         }
@@ -995,6 +998,8 @@
     function fadeUIText(fadeIn) {
         const opacity = fadeIn ? '1' : '0';
         document.getElementById('playlist-title').style.opacity = opacity;
+        const artistEl = document.getElementById('playlist-artist');
+        if(artistEl) artistEl.style.opacity = opacity;
         document.getElementById('bar-artist').style.opacity = opacity;
         document.getElementById('bar-title').style.opacity = opacity;
     }
@@ -1093,6 +1098,8 @@
         
         setTimeout(() => {
             document.getElementById('playlist-title').innerText = meta.title;
+            const artistEl = document.getElementById('playlist-artist');
+            if(artistEl) { artistEl.innerText = meta.artist; artistEl.style.display = 'block'; }
             document.getElementById('bar-title').innerText = meta.title;
             document.getElementById('bar-artist').innerText = meta.artist;
             document.getElementById('style-badge').innerText = state.style;
@@ -1122,7 +1129,11 @@
 
     function updateQueueUI() {
         const queueContainer = document.getElementById('queue-container');
-        queueContainer.innerHTML = ''; 
+        queueContainer.innerHTML = '';
+        const header = document.createElement('div');
+        header.className = 'queue-header';
+        header.textContent = 'Next songs';
+        queueContainer.appendChild(header);
         
         let pointer = state.trackStartTime; 
         let trackRng, dur, seed;
@@ -1132,7 +1143,7 @@
         let currentDur = MIN_TRACK_MS + Math.floor(trackRng() * (MAX_TRACK_MS - MIN_TRACK_MS));
         pointer += currentDur;
 
-        for (let i = 1; i <= 3; i++) {
+        for (let i = 1; i <= 10; i++) {
             seed = diversifySeed(pointer);
             trackRng = mulberry32(seed);
             dur = MIN_TRACK_MS + Math.floor(trackRng() * (MAX_TRACK_MS - MIN_TRACK_MS));
@@ -1284,6 +1295,8 @@
             barPlay.style.display = playing ? 'none' : 'block';
             barPause.style.display = playing ? 'block' : 'none';
         }
+        const prompt = document.getElementById('play-prompt');
+        if(prompt) prompt.style.display = playing ? 'none' : 'inline';
     }
 
     async function togglePlay() {
