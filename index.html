@@ -742,33 +742,35 @@
     };
 
     // --- LOFI SOUND BANKS (10x variation). Keys, pad, bass, lead, effects, drums — hit tones only.
+    // Keys: warm sine/triangle only (no square — too harsh). Short sustain for rhythmic hip-hop chords.
     const KEY_PATCHES = [
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.35, release: 0.9 }, volume: -21, detune: 0 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.12, decay: 0.3, sustain: 0.4, release: 1.2 }, volume: -20, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.3, release: 0.8 }, volume: -22, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.28, release: 0.85 }, volume: -23, detune: 0 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.15, decay: 0.35, sustain: 0.45, release: 1.5 }, volume: -21, detune: 2 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.25, release: 0.7 }, volume: -20, detune: -1 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.5, release: 1.8 }, volume: -22, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.04, decay: 0.28, sustain: 0.32, release: 1 }, volume: -24, detune: 1 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.1, decay: 0.32, sustain: 0.38, release: 1.1 }, volume: -20, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.18, decay: 0.38, sustain: 0.42, release: 1.4 }, volume: -21, detune: -2 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.22, release: 0.75 }, volume: -22, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.14, decay: 0.3, sustain: 0.35, release: 1.2 }, volume: -23, detune: 0 }
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.28, release: 0.7 }, volume: -24, detune: 0 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.12, decay: 0.3, sustain: 0.3, release: 0.9 }, volume: -23, detune: 0 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.22, release: 0.6 }, volume: -25, detune: 0 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.24, release: 0.7 }, volume: -25, detune: 0 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.15, decay: 0.35, sustain: 0.3, release: 1.0 }, volume: -24, detune: 2 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.18, release: 0.5 }, volume: -23, detune: -1 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.32, release: 1.2 }, volume: -25, detune: 0 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.28, sustain: 0.25, release: 0.8 }, volume: -26, detune: 1 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.1, decay: 0.32, sustain: 0.28, release: 0.9 }, volume: -23, detune: 0 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.18, decay: 0.38, sustain: 0.3, release: 1.0 }, volume: -24, detune: -2 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.18, release: 0.6 }, volume: -25, detune: 0 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.14, decay: 0.3, sustain: 0.26, release: 0.9 }, volume: -25, detune: 0 }
     ];
+    // Pads: quiet background warmth only (no square, low sustain, short release — NOT a drone)
     const PAD_PATCHES = [
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.8, decay: 1.2, sustain: 0.8, release: 3.2 }, volume: -22 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 1.2, decay: 1, sustain: 0.75, release: 2.8 }, volume: -20 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 2.2, decay: 1.5, sustain: 0.85, release: 3.5 }, volume: -24 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.5, decay: 1.1, sustain: 0.78, release: 3 }, volume: -21 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.8, decay: 0.9, sustain: 0.7, release: 2.5 }, volume: -19 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 2, decay: 1.3, sustain: 0.82, release: 3.3 }, volume: -23 },
-        { oscillator: { type: 'square' }, envelope: { attack: 1.6, decay: 1.25, sustain: 0.8, release: 2.9 }, volume: -25 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.4, decay: 1, sustain: 0.72, release: 2.7 }, volume: -20 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 2.5, decay: 1.4, sustain: 0.88, release: 3.8 }, volume: -22 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 1, decay: 0.8, sustain: 0.65, release: 2.2 }, volume: -18 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.9, decay: 1.15, sustain: 0.8, release: 3.1 }, volume: -21 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 1.3, decay: 1.05, sustain: 0.76, release: 2.9 }, volume: -20 }
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.8, sustain: 0.35, release: 1.6 }, volume: -29 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.7, sustain: 0.3, release: 1.4 }, volume: -28 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.5, decay: 1.0, sustain: 0.38, release: 1.8 }, volume: -30 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.1, decay: 0.8, sustain: 0.32, release: 1.5 }, volume: -29 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.6, decay: 0.6, sustain: 0.25, release: 1.3 }, volume: -28 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 1.4, decay: 0.9, sustain: 0.36, release: 1.7 }, volume: -30 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.85, sustain: 0.3, release: 1.5 }, volume: -31 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.0, decay: 0.7, sustain: 0.28, release: 1.3 }, volume: -28 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 1.6, decay: 1.0, sustain: 0.38, release: 2.0 }, volume: -29 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.7, decay: 0.5, sustain: 0.22, release: 1.1 }, volume: -27 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.3, decay: 0.8, sustain: 0.32, release: 1.6 }, volume: -29 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.7, sustain: 0.28, release: 1.5 }, volume: -28 }
     ];
     const BASS_PATCHES = [
         { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.92, release: 1 }, volume: -12 },
@@ -784,33 +786,35 @@
         { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.16, sustain: 0.92, release: 0.88 }, volume: -12 },
         { oscillator: { type: 'sine' }, envelope: { attack: 0.09, decay: 0.3, sustain: 0.78, release: 1.3 }, volume: -14 }
     ];
+    // Lead: very quiet background accent (no square — sine/triangle only, well behind the beat)
     const LEAD_PATCHES = [
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.2, release: 1 }, volume: -26 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.25, release: 1.1 }, volume: -25 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.15, sustain: 0.18, release: 0.9 }, volume: -27 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.22, release: 1.05 }, volume: -28 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.28, release: 1.2 }, volume: -24 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.2, release: 0.95 }, volume: -26 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.05, decay: 0.19, sustain: 0.22, release: 1 }, volume: -25 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.16, sustain: 0.2, release: 0.85 }, volume: -27 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.07, decay: 0.24, sustain: 0.26, release: 1.15 }, volume: -25 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.03, decay: 0.18, sustain: 0.19, release: 0.92 }, volume: -29 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.21, sustain: 0.24, release: 1.05 }, volume: -26 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.21, release: 1 }, volume: -26 }
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.12, release: 0.7 }, volume: -32 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.15, release: 0.8 }, volume: -31 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.15, sustain: 0.1, release: 0.6 }, volume: -33 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.75 }, volume: -32 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.18, release: 0.9 }, volume: -31 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.11, release: 0.65 }, volume: -32 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.05, decay: 0.19, sustain: 0.14, release: 0.75 }, volume: -31 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.16, sustain: 0.1, release: 0.6 }, volume: -33 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.07, decay: 0.24, sustain: 0.16, release: 0.85 }, volume: -31 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.18, sustain: 0.1, release: 0.6 }, volume: -34 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.21, sustain: 0.14, release: 0.75 }, volume: -32 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }
     ];
+    // Effects: gentle and warm. Tremolo/vibrato kept very subtle to avoid robotic wobble.
     const EFFECT_PRESETS = [
-        { reverbDecay: 0.28, delayWet: 0.12, chorusWet: 0.32, filterMin: 380, filterMax: 1180, tremoloWet: 0.15, vibratoWet: 0.08 },
-        { reverbDecay: 0.35, delayWet: 0.18, chorusWet: 0.38, filterMin: 420, filterMax: 1350, tremoloWet: 0.22, vibratoWet: 0.1 },
-        { reverbDecay: 0.22, delayWet: 0.08, chorusWet: 0.28, filterMin: 350, filterMax: 1050, tremoloWet: 0.08, vibratoWet: 0.06 },
-        { reverbDecay: 0.4, delayWet: 0.2, chorusWet: 0.42, filterMin: 450, filterMax: 1420, tremoloWet: 0.28, vibratoWet: 0.12 },
-        { reverbDecay: 0.25, delayWet: 0.1, chorusWet: 0.3, filterMin: 320, filterMax: 980, tremoloWet: 0.12, vibratoWet: 0.07 },
-        { reverbDecay: 0.38, delayWet: 0.16, chorusWet: 0.4, filterMin: 500, filterMax: 1550, tremoloWet: 0.25, vibratoWet: 0.11 },
-        { reverbDecay: 0.3, delayWet: 0.14, chorusWet: 0.35, filterMin: 400, filterMax: 1280, tremoloWet: 0.18, vibratoWet: 0.09 },
-        { reverbDecay: 0.2, delayWet: 0.06, chorusWet: 0.25, filterMin: 300, filterMax: 920, tremoloWet: 0.05, vibratoWet: 0.05 },
-        { reverbDecay: 0.42, delayWet: 0.22, chorusWet: 0.45, filterMin: 480, filterMax: 1480, tremoloWet: 0.3, vibratoWet: 0.13 },
-        { reverbDecay: 0.26, delayWet: 0.11, chorusWet: 0.33, filterMin: 360, filterMax: 1120, tremoloWet: 0.14, vibratoWet: 0.075 },
-        { reverbDecay: 0.33, delayWet: 0.15, chorusWet: 0.36, filterMin: 410, filterMax: 1320, tremoloWet: 0.2, vibratoWet: 0.095 },
-        { reverbDecay: 0.24, delayWet: 0.09, chorusWet: 0.28, filterMin: 340, filterMax: 1020, tremoloWet: 0.1, vibratoWet: 0.065 }
+        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 550, filterMax: 1500, tremoloWet: 0.04, vibratoWet: 0.02 },
+        { reverbDecay: 0.32, delayWet: 0.14, chorusWet: 0.22, filterMin: 580, filterMax: 1600, tremoloWet: 0.06, vibratoWet: 0.025 },
+        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 500, filterMax: 1300, tremoloWet: 0.02, vibratoWet: 0.015 },
+        { reverbDecay: 0.36, delayWet: 0.16, chorusWet: 0.24, filterMin: 600, filterMax: 1700, tremoloWet: 0.08, vibratoWet: 0.03 },
+        { reverbDecay: 0.25, delayWet: 0.08, chorusWet: 0.16, filterMin: 520, filterMax: 1400, tremoloWet: 0.03, vibratoWet: 0.02 },
+        { reverbDecay: 0.34, delayWet: 0.12, chorusWet: 0.20, filterMin: 620, filterMax: 1750, tremoloWet: 0.06, vibratoWet: 0.025 },
+        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 540, filterMax: 1500, tremoloWet: 0.04, vibratoWet: 0.02 },
+        { reverbDecay: 0.20, delayWet: 0.05, chorusWet: 0.12, filterMin: 480, filterMax: 1200, tremoloWet: 0.02, vibratoWet: 0.01 },
+        { reverbDecay: 0.38, delayWet: 0.18, chorusWet: 0.26, filterMin: 640, filterMax: 1800, tremoloWet: 0.08, vibratoWet: 0.03 },
+        { reverbDecay: 0.24, delayWet: 0.08, chorusWet: 0.16, filterMin: 510, filterMax: 1350, tremoloWet: 0.03, vibratoWet: 0.02 },
+        { reverbDecay: 0.30, delayWet: 0.10, chorusWet: 0.18, filterMin: 560, filterMax: 1550, tremoloWet: 0.05, vibratoWet: 0.02 },
+        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 490, filterMax: 1250, tremoloWet: 0.02, vibratoWet: 0.015 }
     ];
     const DRUM_TONES = [
         { kickDecay: 0.35, snareDecay: 0.16, hihatFreq: 120, hihatDecay: 0.035 },
@@ -853,34 +857,127 @@
     let vinylNoise, rainNoise, windNoise, filterLFO, padVolumeLFO, analyser;
     let autoPanner, tremolo, vibrato;
     let pageVisible = true;
+    let keepAliveAudio = null;
+    let wakeLock = null;
 
-    /** Resume AudioContext when page is visible again (fixes fragmented sound in car/background) */
+    /**
+     * Create a 1-second silent WAV blob.
+     * Playing this on loop via <audio> does two critical things:
+     * 1) Switches iOS from "ambient" to "playback" audio category → bypasses hardware mute switch
+     * 2) Keeps the browser audio session alive when screen locks or app goes to background
+     */
+    function createSilentAudio() {
+        const sampleRate = 8000;
+        const numSamples = sampleRate; // 1 second of silence
+        const buffer = new ArrayBuffer(44 + numSamples * 2);
+        const view = new DataView(buffer);
+        const w = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+        w(0, 'RIFF');
+        view.setUint32(4, 36 + numSamples * 2, true);
+        w(8, 'WAVE');
+        w(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);   // PCM
+        view.setUint16(22, 1, true);   // mono
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);  // 16-bit
+        w(36, 'data');
+        view.setUint32(40, numSamples * 2, true);
+        // All sample bytes default to 0 (silence)
+        return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    /** Request screen wake lock (re-acquirable) */
+    async function requestWakeLock() {
+        if (!('wakeLock' in navigator)) return;
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch (e) {}
+    }
+
+    /** Aggressively resume all audio when returning to the page */
+    function resumeAllAudio() {
+        if (!state.isPlaying) return;
+        // Resume AudioContext
+        const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
+        if (ctx && ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                Tone.Transport.start();
+                try { vinylNoise.start(); } catch(e) {}
+                try { rainNoise.start(); } catch(e) {}
+                try { windNoise.start(); } catch(e) {}
+                if (padVolumeLFO) try { padVolumeLFO.start(); } catch(e) {}
+            }).catch(() => {});
+        }
+        // Resume keep-alive audio element (iOS/Android background)
+        if (keepAliveAudio && keepAliveAudio.paused) {
+            keepAliveAudio.play().catch(() => {});
+        }
+        // Re-acquire wake lock
+        if (!wakeLock) requestWakeLock();
+    }
+
+    /** Set up all visibility/focus handlers to keep audio alive across mobile lifecycle events */
     function setupVisibilityHandling() {
         pageVisible = document.visibilityState === 'visible';
+
+        // Primary: visibilitychange (tab switch, screen lock/unlock)
         document.addEventListener('visibilitychange', () => {
             pageVisible = document.visibilityState === 'visible';
-            const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
-            if (ctx && ctx.state === 'suspended' && state.isPlaying) {
-                ctx.resume().then(() => {
-                    if (state.isPlaying) {
-                        Tone.Transport.start();
-                        if (vinylNoise) vinylNoise.start();
-                        if (padVolumeLFO) padVolumeLFO.start();
-                    }
-                }).catch(() => {});
-            }
+            if (pageVisible) resumeAllAudio();
         });
-        // Resume on user gesture (e.g. tap after returning to app)
-        const resumeOnInteraction = () => {
-            const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
-            if (ctx && ctx.state === 'suspended') {
-                ctx.resume().then(() => {}).catch(() => {});
-            }
-            document.removeEventListener('click', resumeOnInteraction);
-            document.removeEventListener('touchstart', resumeOnInteraction);
+
+        // Secondary: page focus/blur (some Android browsers)
+        window.addEventListener('focus', () => { pageVisible = true; resumeAllAudio(); });
+        window.addEventListener('blur', () => { pageVisible = false; });
+
+        // Tertiary: resume on any user interaction after return
+        const addResumeListeners = () => {
+            const handler = () => {
+                resumeAllAudio();
+                document.removeEventListener('click', handler);
+                document.removeEventListener('touchstart', handler);
+                // Re-add after a delay so it catches future returns
+                setTimeout(addResumeListeners, 1000);
+            };
+            document.addEventListener('click', handler, { once: true });
+            document.addEventListener('touchstart', handler, { once: true });
         };
-        document.addEventListener('click', resumeOnInteraction, { once: true });
-        document.addEventListener('touchstart', resumeOnInteraction, { once: true });
+        addResumeListeners();
+
+        // iOS-specific: pageshow event fires when returning via back/forward cache
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) resumeAllAudio();
+        });
+    }
+
+    /** Media Session API: lock screen controls & metadata */
+    function setupMediaSession() {
+        if (!('mediaSession' in navigator)) return;
+        navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
+        navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            if (!radioGroup) return;
+            const now = Date.now() + state.timeOffset;
+            const timeRemaining = (state.trackStartTime + state.trackDuration) - now;
+            state.timeOffset += (timeRemaining + 100);
+            updateAudioLogic();
+        });
+        // No previoustrack — this is a radio, can't go back
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.playbackState = 'playing';
+    }
+
+    function updateMediaSessionMetadata(title, artist) {
+        if (!('mediaSession' in navigator)) return;
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title,
+            artist: artist,
+            album: 'Lofi.fm Radio'
+        });
     }
 
     // --- INIT ---
@@ -894,6 +991,18 @@
         if (Tone.context.rawContext && Tone.context.rawContext.baseLatency) {
             try { Tone.context.rawContext.latencyHint = 'playback'; } catch (e) {}
         }
+
+        // Start silent audio loop — this is critical for mobile:
+        // 1) iOS: switches audio category from "ambient" to "playback" → sound plays even when mute switch is on
+        // 2) iOS/Android: keeps the browser audio session alive when screen locks or app backgrounds
+        if (!keepAliveAudio) {
+            keepAliveAudio = new Audio();
+            keepAliveAudio.loop = true;
+            keepAliveAudio.setAttribute('playsinline', '');
+            keepAliveAudio.setAttribute('webkit-playsinline', '');
+            keepAliveAudio.src = URL.createObjectURL(createSilentAudio());
+        }
+        keepAliveAudio.play().catch(() => {});
         
         radioGroup = new Tone.Gain(1).toDestination();
         
@@ -916,17 +1025,17 @@
         chorus = new Tone.Chorus(2, 2.5, 0.5).connect(delay).start(); 
         bitCrusher = new Tone.BitCrusher(8).connect(chorus);
 
-        autoPanner = new Tone.AutoPanner("2n").start().connect(delay); 
-        tremolo = new Tone.Tremolo(5, 0.5).start().connect(bitCrusher); 
-        vibrato = new Tone.Vibrato(5, 0.1).connect(autoPanner); 
+        autoPanner = new Tone.AutoPanner("1m").start().connect(delay); // Very slow panning — gentle stereo width
+        tremolo = new Tone.Tremolo(1.5, 0.15).start().connect(bitCrusher); // Slow, subtle amplitude shimmer
+        vibrato = new Tone.Vibrato(2, 0.03).connect(autoPanner); // Gentle pitch warmth, not wobble
 
-        keys = new Tone.PolySynth(Tone.Synth, { volume: -21, oscillator: { type: "fatsine" }, envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 1 } }).connect(tremolo);
-        pad = new Tone.PolySynth(Tone.Synth, { volume: -20, oscillator: { type: "sine" }, envelope: { attack: 1.5, decay: 1, sustain: 0.8, release: 3 } }).connect(reverb);
-        padVolumeLFO = new Tone.LFO(0.1, -25, -15).start();
+        keys = new Tone.PolySynth(Tone.Synth, { volume: -24, oscillator: { type: "fatsine" }, envelope: { attack: 0.1, decay: 0.3, sustain: 0.28, release: 0.8 } }).connect(tremolo);
+        pad = new Tone.PolySynth(Tone.Synth, { volume: -28, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.8, sustain: 0.35, release: 1.6 } }).connect(reverb);
+        padVolumeLFO = new Tone.LFO(0.06, -34, -26).start(); // Pad stays quiet — background warmth only
         padVolumeLFO.connect(pad.volume);
 
         bass = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.9, release: 1 }, volume: -12 }).connect(compressor); 
-        lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 }, volume: -26 }).connect(vibrato); 
+        lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }).connect(vibrato); 
 
         kick = new Tone.MembraneSynth({ volume: -10 }).connect(compressor);
         snare = new Tone.NoiseSynth({ volume: -12, envelope: { decay: 0.15 } }).connect(masterFilter); 
@@ -954,7 +1063,8 @@
         analyser = new Tone.Analyser("fft", 64);
         masterFilter.connect(analyser);
 
-        if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} }
+        // Request wake lock (re-acquirable on visibility change)
+        await requestWakeLock();
         
         // Keep AudioContext running when tab is in background (prevents car/phone fragmentation)
         setupVisibilityHandling();
@@ -972,6 +1082,9 @@
         
         startSequencer();
         drawVisualizer();
+        
+        // Set up lock screen controls (play/pause/skip)
+        setupMediaSession();
         
         setInterval(updateAudioLogic, 1000); 
         setInterval(updateUIProgress, 200); 
@@ -1120,13 +1233,14 @@
         if (hihat.frequency) hihat.frequency.value = dt.hihatFreq;
         if (hihat.envelope) hihat.envelope.decay = dt.hihatDecay;
 
-        bitCrusher.wet.value = 0.25; 
+        bitCrusher.wet.value = 0.12; // Subtle lo-fi texture, not digital harshness
         bitCrusher.bits.value = Math.max(config.bitCrush || 8, 6); 
-        tremolo.wet.value = Math.min(tremolo.wet.value, 0.25); 
+        tremolo.wet.value = Math.min(tremolo.wet.value, 0.08); // Cap tremolo — no audible wobble
+        if (vibrato.wet) vibrato.wet.value = Math.min(vibrato.wet.value, 0.04);
         
         if (filterLFO) {
-            filterLFO.min = Math.max(filterLFO.min, 500); 
-            filterLFO.max = Math.min(2800, filterLFO.max + 300); 
+            filterLFO.min = Math.max(filterLFO.min, 600); // Keep filter open for clarity
+            filterLFO.max = Math.min(3000, filterLFO.max + 300); 
         }
 
         const vinylLvl = -42 - currentRNG() * 5; 
@@ -1142,6 +1256,9 @@
         windNoise.volume.rampTo(windLvl, 1);
 
         const meta = generateMetadata(seed);
+
+        // Update lock screen "Now Playing" info
+        updateMediaSessionMetadata(meta.title, meta.artist);
         
         setTimeout(() => {
             document.getElementById('playlist-title').innerText = meta.title;
@@ -1304,29 +1421,30 @@
             const bassFifth = state.scale[(degree + 3) % 7] + 2;
             const bassRootUp = state.scale[(degree - 1 + 7) % 7] + 3;
 
-            // ─── HARMONY (Keys/Chords) ───
+            // ─── HARMONY (Keys/Chords) — short staccato chords for hip-hop feel ───
             if (step % 16 === 0) {
-                const chordVel = 0.22 + seqRNG() * 0.1;
-                // Keys: silent during breakdown for contrast
+                const chordVel = 0.15 + seqRNG() * 0.08;
+                // Keys: rhythmic stabs, not sustained drones
                 if (!isBreakdown) {
-                    keys.triggerAttackRelease(notes, "1m", t, chordVel);
+                    keys.triggerAttackRelease(notes, "2n", t, chordVel);
                 }
-                // Pad: atmospheric anchor — always in intro/breakdown, probabilistic elsewhere
-                if (isIntro || isBreakdown) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "2m", t, 0.3);
-                } else if (isChorus) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.28);
-                } else if (seqRNG() > 0.4) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.2);
+                // Pad: very sparse background warmth — NOT on every bar
+                if (isIntro) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.15);
+                } else if (isBreakdown && seqRNG() > 0.3) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.12);
+                } else if (isChorus && seqRNG() > 0.6) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "2n", t, 0.1);
                 }
+                // Pad skipped entirely in Verse — let drums and bass breathe
                 state.lastChordVoicing = notes;
             }
 
-            // Chord anticipation: occasionally push into the next chord a beat early
-            if (step % 16 === 14 && isChorus && seqRNG() < 0.15) {
+            // Chord anticipation: rare rhythmic push (5% in chorus only)
+            if (step % 16 === 14 && isChorus && seqRNG() < 0.05) {
                 const nextDeg = state.progression[(state.barCount + 1) % 4];
                 const antNotes = getChord(nextDeg, state.scale, 3, state.useSeventh);
-                keys.triggerAttackRelease(antNotes, "8n", t, 0.12);
+                keys.triggerAttackRelease(antNotes, "8n", t, 0.08);
             }
 
             // ─── BASS ─── (octave 2 for warmth/audibility, "8n" for sustain)
@@ -1338,13 +1456,14 @@
                 else if (bpVal === 3) bass.triggerAttackRelease(bassRootUp, "8n", t, bassVel * 0.85);
             }
 
-            // ─── LEAD MELODY ─── (section-aware: prominent in chorus, subtle in verse)
-            if (config.hasLead && !isIntro) {
-                const leadProb = isChorus ? 0.4 : (isVerse ? 0.1 : 0);
-                if (leadProb > 0 && seqRNG() < leadProb && step % 4 === 0) {
-                    const motifIdx = (Math.floor(step / 4) + state.barCount * 2) % (state.trackMotif.length || 8);
+            // ─── LEAD MELODY ─── (barely there — background color, not a melody line)
+            if (config.hasLead && !isIntro && !isBreakdown) {
+                const leadProb = isChorus ? 0.12 : (isVerse ? 0.03 : 0);
+                // Play on half-beats (step % 8) not every beat — more space, less machine
+                if (leadProb > 0 && seqRNG() < leadProb && step % 8 === 0) {
+                    const motifIdx = (Math.floor(step / 8) + state.barCount) % (state.trackMotif.length || 8);
                     if (state.trackMotif[motifIdx]) {
-                        const leadVel = isChorus ? (0.25 + seqRNG() * 0.1) : (0.15 + seqRNG() * 0.08);
+                        const leadVel = isChorus ? (0.1 + seqRNG() * 0.06) : (0.06 + seqRNG() * 0.04);
                         lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t, leadVel);
                     }
                 }
@@ -1362,9 +1481,9 @@
                     const snareVel = 0.55 + seqRNG() * 0.2;
                     snare.triggerAttackRelease("16n", t, snareVel);
                 }
-                // Ghost snare: soft hit on certain 16ths between main hits
-                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.12) {
-                    snare.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.06);
+                // Ghost snare: very rare soft accent (max 3% — drums stay tight)
+                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.03) {
+                    snare.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.04);
                 }
 
                 // Hi-hat: pattern-based with velocity humanization
@@ -1469,6 +1588,9 @@
                 if(padVolumeLFO) padVolumeLFO.stop();
                 keys.releaseAll(); pad.releaseAll(); 
             }, 250);
+            // Pause keep-alive audio & update lock screen state
+            if (keepAliveAudio) keepAliveAudio.pause();
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
         } else {
             if(Tone.context.state !== 'running') await Tone.start();
             radioGroup.gain.value = 1; 
@@ -1476,6 +1598,9 @@
             Tone.Transport.start();
             vinylNoise.start(); rainNoise.start(); windNoise.start();
             if(padVolumeLFO) padVolumeLFO.start();
+            // Resume keep-alive audio & update lock screen state
+            if (keepAliveAudio) keepAliveAudio.play().catch(() => {});
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
             updatePlayButtonUI(true);
             drawVisualizer();
         }
