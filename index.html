@@ -365,6 +365,9 @@
             height: calc(100% + 63px);
             object-fit: cover;
             object-position: center top;
+            /* Force own compositing layer so iOS paints video when parent opacity transitions */
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         /* Hard-edge gradient strips: solid black → transparent to hide video seams */
         .canvas-vignette-top {
@@ -700,7 +703,7 @@
 
     <!-- Spotify Canvas: looping video background (mobile, fades in after 30s) -->
     <div class="canvas-video-wrap" id="canvas-container">
-        <video class="canvas-video" id="canvas-video" src="video.mp4" loop muted playsinline webkit-playsinline preload="auto"></video>
+        <video class="canvas-video" id="canvas-video" src="video.mp4" loop muted playsinline preload="auto"></video>
         <div class="canvas-vignette-top"></div>
         <div class="canvas-vignette-radial"></div>
         <div class="canvas-vignette-bottom"></div>
@@ -1290,10 +1293,20 @@
         const tapZone = document.getElementById('canvas-tap-zone');
         if (!container || !video || !video.src || video.src === window.location.href) return;
         if (window.innerWidth > 900) return; // Desktop guard
+        // iOS: ensure muted and playsinline before play; load() then play after container is visible
+        video.muted = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
         video.currentTime = 0;
-        video.play().catch(() => {});
         container.classList.add('visible');
         document.body.classList.add('canvas-active');
+        // Let iOS lay out the visible container before starting playback (fixes video not showing)
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                video.load();
+                video.play().catch(function() {});
+            });
+        });
         if (tapZone) tapZone.style.pointerEvents = 'auto';
         // Scroll main-stage to top so user sees the video first
         const stage = document.querySelector('.main-stage');
