@@ -703,18 +703,18 @@
 
     // --- LOFI SOUND BANKS (10x variation). Keys, pad, bass, lead, effects, drums — hit tones only.
     const KEY_PATCHES = [
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.35, release: 0.9 }, volume: -15, detune: 0 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.12, decay: 0.3, sustain: 0.4, release: 1.2 }, volume: -14, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.3, release: 0.8 }, volume: -16, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.28, release: 0.85 }, volume: -17, detune: 0 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.15, decay: 0.35, sustain: 0.45, release: 1.5 }, volume: -15, detune: 2 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.25, release: 0.7 }, volume: -14, detune: -1 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.5, release: 1.8 }, volume: -16, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.04, decay: 0.28, sustain: 0.32, release: 1 }, volume: -18, detune: 1 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.1, decay: 0.32, sustain: 0.38, release: 1.1 }, volume: -14, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.18, decay: 0.38, sustain: 0.42, release: 1.4 }, volume: -15, detune: -2 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.22, release: 0.75 }, volume: -16, detune: 0 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.14, decay: 0.3, sustain: 0.35, release: 1.2 }, volume: -17, detune: 0 }
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.35, release: 0.9 }, volume: -21, detune: 0 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.12, decay: 0.3, sustain: 0.4, release: 1.2 }, volume: -20, detune: 0 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.3, release: 0.8 }, volume: -22, detune: 0 },
+        { oscillator: { type: 'square' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.28, release: 0.85 }, volume: -23, detune: 0 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.15, decay: 0.35, sustain: 0.45, release: 1.5 }, volume: -21, detune: 2 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.25, release: 0.7 }, volume: -20, detune: -1 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.5, release: 1.8 }, volume: -22, detune: 0 },
+        { oscillator: { type: 'square' }, envelope: { attack: 0.04, decay: 0.28, sustain: 0.32, release: 1 }, volume: -24, detune: 1 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.1, decay: 0.32, sustain: 0.38, release: 1.1 }, volume: -20, detune: 0 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.18, decay: 0.38, sustain: 0.42, release: 1.4 }, volume: -21, detune: -2 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.22, release: 0.75 }, volume: -22, detune: 0 },
+        { oscillator: { type: 'square' }, envelope: { attack: 0.14, decay: 0.3, sustain: 0.35, release: 1.2 }, volume: -23, detune: 0 }
     ];
     const PAD_PATCHES = [
         { oscillator: { type: 'sine' }, envelope: { attack: 1.8, decay: 1.2, sustain: 0.8, release: 3.2 }, volume: -22 },
@@ -745,18 +745,18 @@
         { oscillator: { type: 'sine' }, envelope: { attack: 0.09, decay: 0.3, sustain: 0.78, release: 1.3 }, volume: -3 }
     ];
     const LEAD_PATCHES = [
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.2, release: 1 }, volume: -18 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.25, release: 1.1 }, volume: -17 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.15, sustain: 0.18, release: 0.9 }, volume: -19 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.22, release: 1.05 }, volume: -20 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.28, release: 1.2 }, volume: -16 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.2, release: 0.95 }, volume: -18 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.05, decay: 0.19, sustain: 0.22, release: 1 }, volume: -17 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.16, sustain: 0.2, release: 0.85 }, volume: -19 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.07, decay: 0.24, sustain: 0.26, release: 1.15 }, volume: -17 },
-        { oscillator: { type: 'square' }, envelope: { attack: 0.03, decay: 0.18, sustain: 0.19, release: 0.92 }, volume: -21 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.21, sustain: 0.24, release: 1.05 }, volume: -18 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.21, release: 1 }, volume: -18 }
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.2, release: 1 }, volume: -26 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.25, release: 1.1 }, volume: -25 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.15, sustain: 0.18, release: 0.9 }, volume: -27 },
+        { oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.22, release: 1.05 }, volume: -28 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.28, release: 1.2 }, volume: -24 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.2, release: 0.95 }, volume: -26 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.05, decay: 0.19, sustain: 0.22, release: 1 }, volume: -25 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.16, sustain: 0.2, release: 0.85 }, volume: -27 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.07, decay: 0.24, sustain: 0.26, release: 1.15 }, volume: -25 },
+        { oscillator: { type: 'square' }, envelope: { attack: 0.03, decay: 0.18, sustain: 0.19, release: 0.92 }, volume: -29 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.21, sustain: 0.24, release: 1.05 }, volume: -26 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.21, release: 1 }, volume: -26 }
     ];
     const EFFECT_PRESETS = [
         { reverbDecay: 0.28, delayWet: 0.12, chorusWet: 0.32, filterMin: 380, filterMax: 1180, tremoloWet: 0.15, vibratoWet: 0.08 },
@@ -878,13 +878,13 @@
         tremolo = new Tone.Tremolo(5, 0.5).start().connect(bitCrusher); 
         vibrato = new Tone.Vibrato(5, 0.1).connect(autoPanner); 
 
-        keys = new Tone.PolySynth(Tone.Synth, { volume: -15, oscillator: { type: "fatsine" }, envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 1 } }).connect(tremolo);
+        keys = new Tone.PolySynth(Tone.Synth, { volume: -21, oscillator: { type: "fatsine" }, envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 1 } }).connect(tremolo);
         pad = new Tone.PolySynth(Tone.Synth, { volume: -20, oscillator: { type: "sine" }, envelope: { attack: 1.5, decay: 1, sustain: 0.8, release: 3 } }).connect(reverb);
         padVolumeLFO = new Tone.LFO(0.1, -25, -15).start();
         padVolumeLFO.connect(pad.volume);
 
         bass = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.9, release: 1 }, volume: -2 }).connect(compressor); 
-        lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 }, volume: -18 }).connect(vibrato); 
+        lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 1 }, volume: -26 }).connect(vibrato); 
 
         kick = new Tone.MembraneSynth({ volume: 0 }).connect(compressor);
         snare = new Tone.NoiseSynth({ volume: -2, envelope: { decay: 0.2 } }).connect(masterFilter); 
@@ -1208,8 +1208,8 @@
 
             // HARMONY (Keys/Chords) — one chord per bar
             if (step % 16 === 0) {
-                keys.triggerAttackRelease(notes, "1m", t, 0.4);
-                if (Math.random() > 0.35) pad.triggerAttackRelease(notes, "1m", t, 0.4);
+                keys.triggerAttackRelease(notes, "1m", t, 0.3);
+                if (Math.random() > 0.4) pad.triggerAttackRelease(notes, "1m", t, 0.3);
             }
 
             // BASS: famous pattern (0=rest, 1=root, 2=fifth, 3=root up)
@@ -1218,9 +1218,9 @@
             else if (bpVal === 2) bass.triggerAttackRelease(bassFifth, "16n", t, 0.6);
             else if (bpVal === 3) bass.triggerAttackRelease(bassRootUp, "16n", t, 0.55);
 
-            // LEAD: hook in Verse/Chorus only; denser in Chorus
+            // LEAD: sparse, background accent; never dominant
             const inChorus = (state.barCount >= 8 && state.barCount < 16) || (state.barCount >= 24 && state.barCount < 32);
-            const playLead = config.hasLead && state.section !== 'Breakdown' && (inChorus || Math.random() > 0.4);
+            const playLead = config.hasLead && state.section !== 'Breakdown' && (inChorus ? Math.random() > 0.3 : Math.random() > 0.85);
             if (playLead && step % 4 === 0) {
                 const motifIdx = (Math.floor(step / 4) + state.barCount * 2) % (state.trackMotif.length || 8);
                 if (state.trackMotif[motifIdx]) lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t);
