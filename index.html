@@ -634,6 +634,21 @@
         'Study2': [1,0,0,0, 0,0,0,0, 2,0,0,0, 1,0,0,0], 'Nocturnal': [1,0,0,0, 0,0,1,0, 0,0,0,0, 2,0,0,0],
         'Vintage': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0], 'Vintage2': [1,0,2,0, 1,0,0,0, 1,0,2,0, 1,0,0,0]
     };
+    // --- LOFI HI-HAT PATTERNS. 0=rest, 1=closed hit, 2=ghost (soft), 3=open hat (16-step)
+    const HIHAT_PATTERNS = {
+        'Straight8':  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+        'Swing8':     [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],
+        'Groovy':     [1,0,2,0, 1,0,2,1, 1,0,2,0, 1,0,2,0],
+        'Sparse4':    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+        'Offbeat':    [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+        'Dilla':      [1,0,2,0, 1,0,0,2, 1,0,2,0, 0,2,0,1],
+        'Ghosty':     [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0],
+        'Rolling':    [1,2,1,0, 1,2,0,1, 1,2,1,0, 1,0,2,1],
+        'WithOpen':   [1,0,1,0, 1,0,3,0, 1,0,1,0, 1,0,3,0],
+        'Minimal':    [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+        'Lazy':       [0,0,1,0, 0,0,0,1, 0,0,1,0, 0,0,0,0],
+        'Tight16':    [1,2,1,2, 1,2,1,2, 1,2,1,2, 1,2,1,2]
+    };
     // --- LOFI HIT PROGRESSIONS ONLY (~80 major + ~80 minor). Soul, jazz, nostalgic.
     const FAMOUS_PROGRESSIONS = {
         major: [
@@ -824,7 +839,9 @@
         trackMotif: [],
         drumPattern: [],
         bassPattern: [],   // 0=rest, 1=root, 2=fifth, 3=root up
+        hihatPattern: [],  // 0=rest, 1=closed, 2=ghost, 3=open
         useSeventh: false, // 7th chords for Jazzy/Funk
+        lastChordVoicing: null,
         activeLeadNote: null,
         params: { swing: 0.04, drumDensity: 0.5 }
     };
@@ -1069,8 +1086,14 @@
         const bassKeys = Object.keys(BASS_PATTERNS);
         const bassKey = bassKeys[Math.floor(currentRNG() * bassKeys.length)];
         state.bassPattern = [...BASS_PATTERNS[bassKey]];
+
+        // 4. Hi-hat: groove pattern with ghost notes and open hats
+        const hhKeys = Object.keys(HIHAT_PATTERNS);
+        const hhKey = hhKeys[Math.floor(currentRNG() * hhKeys.length)];
+        state.hihatPattern = [...HIHAT_PATTERNS[hhKey]];
         
         state.useSeventh = (state.style === 'Jazzy' || state.style === 'Neo-Soul' || state.style === 'Vintage' || state.style === 'Chill Hop');
+        state.lastChordVoicing = null;
 
         // --- 10x SOUND VARIATION: pick lofi hit patches per track
         const keyIdx = Math.floor(currentRNG() * KEY_PATCHES.length);
@@ -1111,7 +1134,9 @@
         
         let rainLvl = -99;
         let windLvl = -99;
-        if (state.mood === 'Uplifting' || state.mood === 'Dreamy') windLvl = -40; 
+        if (state.style === 'Rainy' || state.style === 'Cozy') rainLvl = -36;
+        if (state.style === 'Sleepy') { rainLvl = -40; windLvl = -48; }
+        if (state.mood === 'Uplifting' || state.mood === 'Dreamy') windLvl = -42;
 
         rainNoise.volume.rampTo(rainLvl, 1);
         windNoise.volume.rampTo(windLvl, 1);
@@ -1137,7 +1162,7 @@
         }, 1000); 
 
         state.barCount = 0;
-        state.section = 'Verse';
+        state.section = 'Intro';
     }
 
     function generateMetadata(seed) {
@@ -1204,13 +1229,37 @@
     }
     
     function getChord(degree, scale, octave = 3, addSeventh = false) {
-        const r = (degree - 1) % 7, t = (degree + 1) % 7, f = (degree + 3) % 7, s = (degree + 5) % 7;
-        const chord = [scale[r] + octave, scale[t] + octave, scale[f] + octave, scale[s] + octave];
+        const r = (degree - 1 + 7) % 7;
+        const t = (r + 2) % 7;
+        const f = (r + 4) % 7;
+        const chord = [scale[r] + octave, scale[t] + octave, scale[f] + octave];
         if (addSeventh) {
-            const seventh = (degree + 6) % 7;
-            chord.push(scale[seventh] + octave);
+            const s = (r + 6) % 7;
+            chord.push(scale[s] + octave);
         }
         return chord;
+    }
+
+    // Voice leading: pick the chord inversion closest to the previous chord's register
+    function voiceLead(chordNotes, prevChord) {
+        if (!prevChord || !prevChord.length) return chordNotes;
+        try {
+            const midiNotes = chordNotes.map(n => Tone.Frequency(n).toMidi());
+            const prevCenter = prevChord.reduce((s, n) => s + Tone.Frequency(n).toMidi(), 0) / prevChord.length;
+            let best = chordNotes;
+            let bestDist = Infinity;
+            for (let inv = 0; inv < chordNotes.length; inv++) {
+                const voicingMidi = midiNotes.map((m, i) => i < inv ? m + 12 : m);
+                voicingMidi.sort((a, b) => a - b);
+                const center = voicingMidi.reduce((s, m) => s + m, 0) / voicingMidi.length;
+                const dist = Math.abs(center - prevCenter);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = voicingMidi.map(m => Tone.Frequency(m, "midi").toNote());
+                }
+            }
+            return best;
+        } catch(e) { return chordNotes; }
     }
     
     function generateProgression(mode) {
@@ -1227,61 +1276,133 @@
         Tone.Transport.cancel();
         Tone.Transport.start("+0.1");
         let step = 0;
+        // Seeded RNG for deterministic sequencer behavior (no more Math.random())
+        let seqRNG = mulberry32(state.currentSeed + 77777);
+
         Tone.Transport.scheduleRepeat((time) => {
-            const sixteenth = step % 4; 
-            const t = time + state.params.swing * (sixteenth % 2 === 1 ? 1 : 0);
+            const patIdx = step % 16;
+            const sixteenth = step % 4;
             const config = STYLES[state.style];
 
+            // Humanized timing: swing + subtle micro-timing variation
+            const swingOffset = state.params.swing * (sixteenth % 2 === 1 ? 1 : 0);
+            const humanize = (seqRNG() - 0.5) * 0.005;
+            const t = time + swingOffset + humanize;
+
+            // Section awareness for layering
+            const isIntro = state.section === 'Intro';
+            const isVerse = state.section === 'Verse';
+            const isChorus = state.section === 'Chorus';
+            const isBreakdown = state.section === 'Breakdown';
+
+            // Current chord with voice leading for smooth transitions
             const progIdx = state.barCount % 4;
             const degree = state.progression[progIdx];
-            const notes = getChord(degree, state.scale, 3, state.useSeventh);
-            const bassRoot = state.scale[(degree - 1 + 7) % 7] + 1;
-            const bassFifth = state.scale[(degree + 3) % 7] + 1;
-            const bassRootUp = state.scale[(degree - 1 + 7) % 7] + 2;
+            const rawNotes = getChord(degree, state.scale, 3, state.useSeventh);
+            const notes = voiceLead(rawNotes, state.lastChordVoicing);
+            const bassRoot = state.scale[(degree - 1 + 7) % 7] + 2;
+            const bassFifth = state.scale[(degree + 3) % 7] + 2;
+            const bassRootUp = state.scale[(degree - 1 + 7) % 7] + 3;
 
-            // HARMONY (Keys/Chords) — one chord per bar
+            // ─── HARMONY (Keys/Chords) ───
             if (step % 16 === 0) {
-                keys.triggerAttackRelease(notes, "1m", t, 0.3);
-                if (Math.random() > 0.4) pad.triggerAttackRelease(notes, "1m", t, 0.3);
-            }
-
-            // BASS: famous pattern (0=rest, 1=root, 2=fifth, 3=root up)
-            const bpVal = state.bassPattern[step % 16];
-            if (bpVal === 1) bass.triggerAttackRelease(bassRoot, "16n", t, 0.45);
-            else if (bpVal === 2) bass.triggerAttackRelease(bassFifth, "16n", t, 0.4);
-            else if (bpVal === 3) bass.triggerAttackRelease(bassRootUp, "16n", t, 0.38);
-
-            // LEAD: sparse, background accent; never dominant
-            const inChorus = (state.barCount >= 8 && state.barCount < 16) || (state.barCount >= 24 && state.barCount < 32);
-            const playLead = config.hasLead && state.section !== 'Breakdown' && (inChorus ? Math.random() > 0.3 : Math.random() > 0.85);
-            if (playLead && step % 4 === 0) {
-                const motifIdx = (Math.floor(step / 4) + state.barCount * 2) % (state.trackMotif.length || 8);
-                if (state.trackMotif[motifIdx]) lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t);
-            }
-
-            // DRUMS (Pattern Based)
-            if (state.section !== 'Breakdown') {
-                const patIdx = step % 16;
-                // Kick
-                if (state.drumPattern && state.drumPattern[patIdx] === 1) {
-                    kick.triggerAttackRelease("C1", "8n", t);
+                const chordVel = 0.22 + seqRNG() * 0.1;
+                // Keys: silent during breakdown for contrast
+                if (!isBreakdown) {
+                    keys.triggerAttackRelease(notes, "1m", t, chordVel);
                 }
-                // Snare
-                if (state.drumPattern && state.drumPattern[patIdx] === 2) {
-                    snare.triggerAttackRelease("16n", t);
+                // Pad: atmospheric anchor — always in intro/breakdown, probabilistic elsewhere
+                if (isIntro || isBreakdown) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "2m", t, 0.3);
+                } else if (isChorus) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.28);
+                } else if (seqRNG() > 0.4) {
+                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.2);
                 }
-                
-                // HiHats (Soft, sparse filler)
-                if (step % 4 === 0 && Math.random() < 0.7) hihat.triggerAttackRelease("32n", t, 0.15 + Math.random()*0.08);
+                state.lastChordVoicing = notes;
             }
-            
-            // Foley (Occasional)
-            if (Math.random() < 0.003) foley.triggerAttackRelease("32n", t, 0.15);
+
+            // Chord anticipation: occasionally push into the next chord a beat early
+            if (step % 16 === 14 && isChorus && seqRNG() < 0.15) {
+                const nextDeg = state.progression[(state.barCount + 1) % 4];
+                const antNotes = getChord(nextDeg, state.scale, 3, state.useSeventh);
+                keys.triggerAttackRelease(antNotes, "8n", t, 0.12);
+            }
+
+            // ─── BASS ─── (octave 2 for warmth/audibility, "8n" for sustain)
+            if (!isIntro) {
+                const bpVal = state.bassPattern[patIdx];
+                const bassVel = 0.35 + seqRNG() * 0.12;
+                if (bpVal === 1) bass.triggerAttackRelease(bassRoot, "8n", t, bassVel);
+                else if (bpVal === 2) bass.triggerAttackRelease(bassFifth, "8n", t, bassVel * 0.9);
+                else if (bpVal === 3) bass.triggerAttackRelease(bassRootUp, "8n", t, bassVel * 0.85);
+            }
+
+            // ─── LEAD MELODY ─── (section-aware: prominent in chorus, subtle in verse)
+            if (config.hasLead && !isIntro) {
+                const leadProb = isChorus ? 0.4 : (isVerse ? 0.1 : 0);
+                if (leadProb > 0 && seqRNG() < leadProb && step % 4 === 0) {
+                    const motifIdx = (Math.floor(step / 4) + state.barCount * 2) % (state.trackMotif.length || 8);
+                    if (state.trackMotif[motifIdx]) {
+                        const leadVel = isChorus ? (0.25 + seqRNG() * 0.1) : (0.15 + seqRNG() * 0.08);
+                        lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t, leadVel);
+                    }
+                }
+            }
+
+            // ─── DRUMS ───
+            if (!isIntro && !isBreakdown) {
+                // Kick with velocity humanization
+                if (state.drumPattern[patIdx] === 1) {
+                    const kickVel = 0.65 + seqRNG() * 0.2;
+                    kick.triggerAttackRelease("C1", "8n", t, kickVel);
+                }
+                // Snare with velocity humanization
+                if (state.drumPattern[patIdx] === 2) {
+                    const snareVel = 0.55 + seqRNG() * 0.2;
+                    snare.triggerAttackRelease("16n", t, snareVel);
+                }
+                // Ghost snare: soft hit on certain 16ths between main hits
+                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.12) {
+                    snare.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.06);
+                }
+
+                // Hi-hat: pattern-based with velocity humanization
+                const hhVal = state.hihatPattern[patIdx];
+                if (hhVal === 1) {
+                    hihat.triggerAttackRelease("32n", t, 0.13 + seqRNG() * 0.08);
+                } else if (hhVal === 2) { // Ghost hit — barely audible texture
+                    hihat.triggerAttackRelease("32n", t, 0.04 + seqRNG() * 0.04);
+                } else if (hhVal === 3) { // Open hat — longer ring
+                    hihat.triggerAttackRelease("16n", t, 0.18 + seqRNG() * 0.08);
+                }
+            } else if (isIntro) {
+                // Intro: very sparse hi-hat to gently establish pulse
+                if (step % 8 === 0 && seqRNG() < 0.5) {
+                    hihat.triggerAttackRelease("32n", t, 0.05 + seqRNG() * 0.03);
+                }
+            } else if (isBreakdown) {
+                // Breakdown: sparse atmospheric pulse
+                if (step % 8 === 0 && seqRNG() < 0.35) {
+                    hihat.triggerAttackRelease("32n", t, 0.04 + seqRNG() * 0.03);
+                }
+            }
+
+            // Foley texture (deterministic occasional)
+            if (seqRNG() < 0.003) foley.triggerAttackRelease("32n", t, 0.12);
 
             step = (step + 1) % 16;
             if (step === 0) {
                 state.barCount++;
-                state.section = (state.barCount >= 16 && state.barCount < 24) ? 'Breakdown' : ((state.barCount >= 8 && state.barCount < 16) || (state.barCount >= 24 && state.barCount < 32)) ? 'Chorus' : 'Verse';
+                // Song structure: Intro(4 bars) → [Verse(4) → Chorus(8) → Breakdown(4)] cycle
+                if (state.barCount < 4) {
+                    state.section = 'Intro';
+                } else {
+                    const cycleBar = (state.barCount - 4) % 16;
+                    if (cycleBar < 4) state.section = 'Verse';
+                    else if (cycleBar < 12) state.section = 'Chorus';
+                    else state.section = 'Breakdown';
+                }
             }
         }, "16n");
     }
@@ -1353,10 +1474,8 @@
             radioGroup.gain.value = 1; 
             state.isPlaying = true;
             Tone.Transport.start();
-            vinylNoise.start(); 
+            vinylNoise.start(); rainNoise.start(); windNoise.start();
             if(padVolumeLFO) padVolumeLFO.start();
-            if (state.style === 'Sleepy') rainNoise.start();
-            if (state.mood === 'Uplifting') windNoise.start();
             updatePlayButtonUI(true);
             drawVisualizer();
         }
