@@ -871,14 +871,24 @@
     const MOOD_SCALES = { 'Chill': ['Dorian', 'Minor', 'Major'], 'Uplifting': ['Major', 'Lydian'], 'Groovy': ['Mixolydian', 'Dorian', 'Minor'], 'Dreamy': ['Lydian', 'Major', 'Dorian'], 'Warm': ['Major', 'Mixolydian', 'Minor'] };
     const MODES = { 'Minor': [0, 2, 3, 5, 7, 8, 10], 'Dorian': [0, 2, 3, 5, 7, 9, 10], 'Major': [0, 2, 4, 5, 7, 9, 11], 'Lydian': [0, 2, 4, 6, 7, 9, 11], 'Phrygian': [0, 1, 3, 5, 7, 8, 10], 'Mixolydian': [0, 2, 4, 5, 7, 9, 10] };
 
-    // --- Classic lo-fi hip hop / chill hop drums only (6 iconic patterns)
+    // --- Lo-fi hip-hop drum patterns. 1=kick, 2=snare, 0=rest. (16 iconic patterns)
     const DRUM_LOOPS = {
-        'BoomBap': [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,0],
-        'Dilla': [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,0,0],
-        'Lofi': [1,0,0,1, 2,0,0,0, 1,0,0,0, 2,0,0,0],
-        'ChillHop': [1,0,0,0, 2,0,0,0, 0,1,0,0, 2,0,0,1],
-        'JazzHop': [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,1],
-        'Backbeat': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0]
+        'BoomBap':    [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,0],
+        'BoomBap2':   [1,0,0,0, 2,0,1,0, 0,0,0,0, 2,0,0,1],  // Syncopated kick on &3
+        'Dilla':      [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,0,0],
+        'DillaSwing': [0,0,1,0, 2,0,0,0, 0,1,0,0, 2,0,0,1],  // Late kick — drunk feel
+        'Lofi':       [1,0,0,1, 2,0,0,0, 1,0,0,0, 2,0,0,0],
+        'LofiHeavy':  [1,0,1,0, 2,0,0,1, 1,0,0,0, 2,0,1,0],  // Busier, more kick energy
+        'ChillHop':   [1,0,0,0, 2,0,0,0, 0,1,0,0, 2,0,0,1],
+        'JazzHop':    [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,1],
+        'Backbeat':   [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0],
+        'Shuffle':    [1,0,0,1, 2,0,0,0, 1,0,0,1, 2,0,0,0],  // Double kick shuffle
+        'Trap':       [1,0,0,0, 0,0,2,0, 0,0,1,0, 2,0,0,0],  // Trap-influenced offbeat snare
+        'NeoSoul':    [1,0,0,0, 2,0,0,0, 0,0,1,0, 0,2,0,0],  // Ghost kick, late snare
+        'Pocket':     [1,0,0,0, 2,0,0,1, 0,0,0,0, 2,0,0,0],  // Tight pocket — less is more
+        'Swing':      [1,0,0,0, 2,0,0,0, 0,0,1,0, 2,0,1,0],  // Swing kick on &4
+        'Broken':     [1,0,1,0, 0,0,2,0, 1,0,0,0, 0,2,0,0],  // Broken beat — unpredictable
+        'HalfTime':   [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],  // Half-time — spacious
     };
     // --- DEEP LO-FI BASS LINES. Root-focused patterns that lock with the kick and anchor the chord.
     // Values: 0=rest, 1=chord root, 3=chord 3rd, 5=chord 5th, 7=approach (next chord root).
@@ -950,20 +960,34 @@
         'Lullaby':  [1,0,0,0, 0,0,0,3, 0,0,1,0, 0,0,0,0],  // Soft rocking pattern
         'Mist':     [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],  // Ghost-like single appearance
     };
-    // --- LOFI HI-HAT PATTERNS. 0=rest, 1=closed hit, 2=ghost (soft), 3=open hat (16-step)
+    // --- HI-HAT PATTERNS. 0=rest, 1=closed, 2=ghost (soft), 3=open, 4=accent (loud closed) (16-step)
+    // Colorful = mixing articulations, rolls, accents, and open/closed contrasts.
     const HIHAT_PATTERNS = {
-        'Straight8':  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
-        'Swing8':     [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],
-        'Groovy':     [1,0,2,0, 1,0,2,1, 1,0,2,0, 1,0,2,0],
-        'Sparse4':    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-        'Offbeat':    [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
-        'Dilla':      [1,0,2,0, 1,0,0,2, 1,0,2,0, 0,2,0,1],
-        'Ghosty':     [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0],
-        'Rolling':    [1,2,1,0, 1,2,0,1, 1,2,1,0, 1,0,2,1],
-        'WithOpen':   [1,0,1,0, 1,0,3,0, 1,0,1,0, 1,0,3,0],
-        'Minimal':    [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
-        'Lazy':       [0,0,1,0, 0,0,0,1, 0,0,1,0, 0,0,0,0],
-        'Tight16':    [1,2,1,2, 1,2,1,2, 1,2,1,2, 1,2,1,2]
+        // --- STRAIGHT (foundation grooves)
+        'Straight8':   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],  // Classic 8ths
+        'Straight16':  [1,2,1,2, 1,2,1,2, 1,2,1,2, 1,2,1,2],  // 16ths with ghost
+        'Accent8':     [4,0,1,0, 4,0,1,0, 4,0,1,0, 4,0,1,0],  // Accented downbeats
+        // --- SWING & GROOVE (hip-hop bounce)
+        'Swing8':      [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],  // Swung triplet feel
+        'Groovy':      [4,0,2,0, 1,0,2,1, 4,0,2,0, 1,0,2,0],  // Accented groove with ghosts
+        'Dilla':       [1,0,2,0, 4,0,0,2, 1,0,2,0, 0,2,0,1],  // Dilla pocket
+        'BoomBap':     [4,0,1,0, 1,0,3,0, 4,0,1,0, 1,0,3,0],  // Boom-bap open hat on &
+        'Shuffle':     [4,0,0,2, 1,0,0,2, 4,0,0,2, 1,0,0,1],  // Shuffle groove
+        // --- OPEN/CLOSED CONTRAST (colorful dynamics)
+        'OpenClose':   [1,0,1,0, 3,0,1,0, 1,0,1,0, 3,0,1,0],  // Alternating open/closed
+        'OpenFill':    [1,0,1,0, 1,0,1,0, 1,0,1,0, 3,3,3,0],  // Fill with open hat run
+        'WideOpen':    [3,0,0,0, 1,0,3,0, 0,0,1,0, 3,0,0,0],  // Sparse with lots of open
+        'Sizzle':      [3,0,1,0, 3,0,1,0, 3,0,1,0, 3,0,1,0],  // Sizzle — open beats, closed offs
+        // --- ROLLS & RUNS (energy and fills)
+        'Roll':        [1,1,1,0, 1,0,1,0, 1,1,1,0, 1,0,1,0],  // 16th note rolls on 1
+        'BuildRoll':   [1,0,1,0, 1,0,1,0, 1,2,1,2, 1,1,1,1],  // Builds to fill at end
+        'TrapRoll':    [1,0,1,0, 1,0,1,1, 1,1,0,0, 1,1,1,0],  // Trap-influenced stutter
+        'MachineGun':  [4,2,1,2, 4,2,1,2, 4,2,1,2, 1,1,1,1],  // Aggressive 16ths + fill
+        // --- MINIMAL & GHOSTY (texture, breathing)
+        'Minimal':     [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],  // Sparse clicks
+        'Lazy':        [0,0,1,0, 0,0,0,1, 0,0,1,0, 0,0,0,0],  // Behind the beat
+        'GhostRide':   [2,0,2,0, 1,0,2,0, 2,0,2,0, 1,0,2,0],  // Ghost-heavy ride feel
+        'Offbeat':     [0,0,4,0, 0,0,4,0, 0,0,4,0, 0,0,4,0],  // Accented offbeat only
     };
     // --- LOFI HIT PROGRESSIONS ONLY (~80 major + ~80 minor). Soul, jazz, nostalgic.
     const FAMOUS_PROGRESSIONS = {
@@ -1542,19 +1566,23 @@
         tremolo = new Tone.Tremolo(1.5, 0.15).start().connect(bitCrusher); // Slow, subtle amplitude shimmer
         vibrato = new Tone.Vibrato(2, 0.03).connect(autoPanner); // Gentle pitch warmth, not wobble
 
-        // Piano: THE LEAD INSTRUMENT — gets its OWN dedicated reverb + compressor path.
-        // CRITICAL: piano BYPASSES masterFilter (lowpass LFO sweeps to 1200Hz and kills piano brightness).
-        // Piano goes: keys → pianoReverb → compressor → limiter → radioGroup → destination
-        const pianoReverb = new Tone.JCReverb(0.25).connect(compressor);
+        // Piano: THE LEAD INSTRUMENT — DIRECT path to compressor for maximum presence.
+        // Bypasses masterFilter AND reverb (JCReverb wet=1 was eating the dry signal!).
+        // Dry signal: keys → compressor → limiter → radioGroup → destination
+        // Reverb send: keys → pianoReverbSend (quiet) → compressor (just for ambience)
+        const pianoReverbSend = new Tone.JCReverb(0.2).connect(compressor);
+        pianoReverbSend.wet.value = 1; // Send is 100% wet — the dry comes from the direct connection
         keys = new Tone.PolySynth(Tone.FMSynth, {
-            volume: -8,
+            volume: -6,
             harmonicity: 3,
             modulationIndex: 4,
             oscillator: { type: "sine" },
             envelope: { attack: 0.005, decay: 0.6, sustain: 0.25, release: 1.2 },
             modulation: { type: "sine" },
             modulationEnvelope: { attack: 0.002, decay: 0.25, sustain: 0, release: 0.4 }
-        }).connect(pianoReverb);
+        });
+        keys.connect(compressor);  // DRY path — piano heard directly, no reverb eating it
+        keys.connect(new Tone.Gain(0.3).connect(pianoReverbSend)); // WET send — quiet reverb for space
         // Pad: very quiet background only — NOT a drone, just occasional warmth
         pad = new Tone.PolySynth(Tone.Synth, { volume: -34, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.15, release: 1.0 } }).connect(reverb);
         padVolumeLFO = new Tone.LFO(0.06, -40, -32).start(); // Pad very quiet — subtle background only
@@ -2104,41 +2132,84 @@
                 }
             }
 
-            // ─── DRUMS ─── Hip-hop groove — punchy kick, snappy snare, crisp hats
+            // ─── DRUMS ─── Dynamic hip-hop groove with velocity accents and fills
             if (!isIntro && !isBreakdown) {
-                // Kick — punchy boom-bap thump
+                // --- KICK --- Velocity accents: beat 1 is louder, chorus hits harder
                 if (state.drumPattern[patIdx] === 1) {
-                    const kickVel = 0.7 + seqRNG() * 0.2;
+                    const beatOneBoost = (patIdx === 0) ? 0.1 : 0; // Accent beat 1
+                    const sectionBoost = isChorus ? 0.08 : 0;
+                    const kickVel = Math.min(0.95, 0.65 + seqRNG() * 0.2 + beatOneBoost + sectionBoost);
                     kick.triggerAttackRelease("C1", "8n", t, kickVel);
                 }
-                // Snare — crisp snap with velocity humanization
-                if (state.drumPattern[patIdx] === 2) {
-                    const snareVel = 0.6 + seqRNG() * 0.2;
-                    snare.triggerAttackRelease("16n", t, snareVel);
-                }
-                // Ghost snare: subtle accent for hip-hop groove (5%)
-                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.05) {
-                    snare.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.06);
+                // Ghost kick: rare soft kick on empty slots for groove depth (4%)
+                if (state.drumPattern[patIdx] === 0 && sixteenth === 3 && seqRNG() < 0.04) {
+                    kick.triggerAttackRelease("C1", "16n", t, 0.12 + seqRNG() * 0.08);
                 }
 
-                // Hi-hat: pattern-based — crisp and present
+                // --- SNARE --- Accented on main hits, ghost snares for shuffle
+                if (state.drumPattern[patIdx] === 2) {
+                    const snareAccent = (patIdx === 4 || patIdx === 12) ? 0.1 : 0; // Backbeat accent
+                    const snareVel = Math.min(0.9, 0.55 + seqRNG() * 0.2 + snareAccent);
+                    snare.triggerAttackRelease("16n", t, snareVel);
+                }
+                // Ghost snare: fills the space between main hits (6%)
+                if (state.drumPattern[patIdx] === 0 && (sixteenth === 1 || sixteenth === 3) && seqRNG() < 0.06) {
+                    snare.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.06);
+                }
+                // Snare fill: 16th-note roll on last beat of every 4th bar
+                if (state.barCount % 4 === 3 && patIdx >= 13 && seqRNG() < 0.5) {
+                    snare.triggerAttackRelease("32n", t, 0.15 + seqRNG() * 0.1);
+                }
+
+                // --- HI-HAT --- Colorful: pitch varies per hit, 4 articulations
                 const hhVal = state.hihatPattern[patIdx];
-                if (hhVal === 1) {
-                    hihat.triggerAttackRelease("32n", t, 0.18 + seqRNG() * 0.1);
-                } else if (hhVal === 2) { // Ghost hit — soft texture
-                    hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.05);
-                } else if (hhVal === 3) { // Open hat — ring
-                    hihat.triggerAttackRelease("16n", t, 0.22 + seqRNG() * 0.1);
+                if (hhVal > 0) {
+                    // Shift hi-hat frequency slightly per hit for "color" (140-200Hz range)
+                    const freqShift = 140 + seqRNG() * 60;
+                    if (hihat.frequency) hihat.frequency.value = freqShift;
+
+                    if (hhVal === 1) {
+                        // Closed — tight tick, varied velocity
+                        const hhVel = 0.15 + seqRNG() * 0.12;
+                        hihat.triggerAttackRelease("32n", t, hhVel);
+                    } else if (hhVal === 2) {
+                        // Ghost — barely-there texture, darker frequency
+                        if (hihat.frequency) hihat.frequency.value = 120 + seqRNG() * 30;
+                        hihat.triggerAttackRelease("64n", t, 0.04 + seqRNG() * 0.04);
+                    } else if (hhVal === 3) {
+                        // Open — longer ring, brighter frequency, more presence
+                        if (hihat.frequency) hihat.frequency.value = 170 + seqRNG() * 50;
+                        const openDecay = 0.06 + seqRNG() * 0.04; // Vary ring length
+                        if (hihat.envelope) hihat.envelope.decay = openDecay;
+                        hihat.triggerAttackRelease("16n", t, 0.22 + seqRNG() * 0.12);
+                    } else if (hhVal === 4) {
+                        // Accent — loud, bright closed hit, cuts through
+                        if (hihat.frequency) hihat.frequency.value = 180 + seqRNG() * 40;
+                        hihat.triggerAttackRelease("32n", t, 0.28 + seqRNG() * 0.12);
+                    }
+                }
+                // Hi-hat fill: 32nd-note burst on last beat of every 8th bar
+                if (state.barCount % 8 === 7 && patIdx >= 14 && seqRNG() < 0.6) {
+                    if (hihat.frequency) hihat.frequency.value = 160 + seqRNG() * 60;
+                    hihat.triggerAttackRelease("64n", t, 0.18 + seqRNG() * 0.1);
                 }
             } else if (isIntro) {
-                // Intro: hi-hat establishing pulse
+                // Intro: sparse hi-hat, building energy
                 if (step % 8 === 0 && seqRNG() < 0.6) {
-                    hihat.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.05);
+                    if (hihat.frequency) hihat.frequency.value = 140 + seqRNG() * 40;
+                    hihat.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.06);
                 }
             } else if (isBreakdown) {
-                // Breakdown: sparse but present
-                if (step % 8 === 0 && seqRNG() < 0.45) {
-                    hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.04);
+                // Breakdown: filtered, darker hi-hats — lower frequency, sparse
+                if (step % 4 === 0 && seqRNG() < 0.4) {
+                    if (hihat.frequency) hihat.frequency.value = 110 + seqRNG() * 30;
+                    hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.05);
+                }
+                // Occasional open hat swell in breakdown
+                if (step % 16 === 0 && seqRNG() < 0.3) {
+                    if (hihat.frequency) hihat.frequency.value = 160 + seqRNG() * 40;
+                    if (hihat.envelope) hihat.envelope.decay = 0.08;
+                    hihat.triggerAttackRelease("8n", t, 0.1 + seqRNG() * 0.06);
                 }
             }
 
