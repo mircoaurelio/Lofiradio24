@@ -874,6 +874,13 @@
     const MOOD_SCALES = { 'Chill': ['Dorian', 'Minor', 'Major'], 'Uplifting': ['Major', 'Lydian'], 'Groovy': ['Mixolydian', 'Dorian', 'Minor'], 'Dreamy': ['Lydian', 'Major', 'Dorian'], 'Warm': ['Major', 'Mixolydian', 'Minor'] };
     const MODES = { 'Minor': [0, 2, 3, 5, 7, 8, 10], 'Dorian': [0, 2, 3, 5, 7, 9, 10], 'Major': [0, 2, 4, 5, 7, 9, 11], 'Lydian': [0, 2, 4, 6, 7, 9, 11], 'Phrygian': [0, 1, 3, 5, 7, 8, 10], 'Mixolydian': [0, 2, 4, 5, 7, 9, 10] };
 
+    // --- TIME SIGNATURES --- 4/4 (16 steps), 3/4 (12 steps), 6/8 (12 steps, triplet feel)
+    const TIME_SIGNATURES = {
+        '4/4': { stepsPerBar: 16, transportInterval: '16n' },
+        '3/4': { stepsPerBar: 12, transportInterval: '16n' },
+        '6/8': { stepsPerBar: 12, transportInterval: '16n' }
+    };
+
     // --- Lo-fi hip-hop drum patterns. 1=kick, 2=snare, 0=rest. (16 iconic patterns)
     const DRUM_LOOPS = {
         'BoomBap':    [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,0],
@@ -892,6 +899,14 @@
         'Swing':      [1,0,0,0, 2,0,0,0, 0,0,1,0, 2,0,1,0],  // Swing kick on &4
         'Broken':     [1,0,1,0, 0,0,2,0, 1,0,0,0, 0,2,0,0],  // Broken beat — unpredictable
         'HalfTime':   [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],  // Half-time — spacious
+    };
+    // --- 3/4 & 6/8 DRUM PATTERNS (12-step, waltz / compound feel)
+    const DRUM_LOOPS_34 = {
+        'Waltz':      [1,0,0,0, 2,0,0,0, 0,0,1,0],
+        'WaltzBap':   [1,0,0,0, 0,2,0,0, 1,0,0,0],
+        'SixEight':   [1,0,0,0, 2,0,0,0, 0,1,0,0],
+        'Triplet':    [1,0,0,0, 0,0,2,0, 0,1,0,0],
+        'Sparse34':   [1,0,0,0, 0,0,0,0, 2,0,0,0],
     };
     // --- DEEP LO-FI BASS LINES. Root-focused patterns that lock with the kick and anchor the chord.
     // Values: 0=rest, 1=chord root, 3=chord 3rd, 5=chord 5th, 7=approach (next chord root).
@@ -922,30 +937,62 @@
         'RnBSub':      [1,0,0,0, 0,0,3,0, 5,0,0,0, 0,0,0,0],  // R&B pocket — root, late 3rd, 5th
         'NeoSoul':     [1,0,0,0, 0,0,0,0, 3,0,0,0, 0,0,7,0],  // Neo-soul approach — root, 3rd, walk to next
     };
-    // --- LOFI PIANO PATTERNS. 0=rest, 1=full chord, 3=arpeggio note (single chord tone) (16-step)
-    // Piano is the melodic lead — patterns designed to complement the deep bass below.
-    // When bass is on root, piano fills with upper chord tones. When bass rests, piano anchors.
+    const BASS_PATTERNS_34 = {
+        'WaltzRoot':   [1,0,0,0, 0,0,0,0, 1,0,0,0],
+        'WaltzWalk':   [1,0,0,0, 3,0,0,0, 5,0,0,0],
+        'Pulse34':     [1,0,0,0, 1,0,0,0, 1,0,0,0],
+        'SixEight':    [1,0,0,0, 0,0,5,0, 1,0,0,0],
+    };
+    // --- LOFI PIANO PATTERNS. 0=rest, 1=full chord, 2=dyad, 3=arpeggio note, 4=octave, 5=passing (16-step)
+    // Piano is the melodic lead — patterns complement deep bass. Hash-driven variety: density, section, alternation.
     const PIANO_PATTERNS = {
         // --- BLOCK CHORDS (pairs with deep root-only bass patterns)
         'Block':       [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],  // Two chords per bar — classic lo-fi
         'BlockSlow':   [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // One chord per bar — maximum space
         'RhodesHit':   [1,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,1],  // Soulful laid-back Rhodes feel
         'OffbeatChord':[0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],  // Backbeat — sits between bass hits
-        // --- COMPING (jazzy rhythmic hits — pairs with walking/groove bass)
+        // --- COMPING (jazzy rhythmic hits)
         'Comping':     [1,0,0,0, 0,0,1,0, 0,0,0,0, 0,1,0,0],  // Jazz comping — syncopated stabs
         'NeoSoulComp': [0,0,1,0, 0,0,0,1, 0,0,0,0, 1,0,0,0],  // Neo-soul pocket — behind the beat
         'Bounce':      [1,0,0,1, 0,0,0,0, 1,0,0,0, 0,0,1,0],  // Bouncy — hits lock with bass
         'SoftStab':    [1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,0],  // Gentle 3-hit pattern
-        // --- ARPEGGIOS (melodic motion — pairs with sustained/sparse bass)
-        'Arpeggio':    [3,0,3,0, 3,0,3,0, 3,0,3,0, 3,0,3,0],  // 8th-note arpeggio over bass root
+        // --- DYADS & LIGHTER VOICINGS (less chord-heavy)
+        'DyadPulse':   [2,0,2,0, 0,0,2,0, 2,0,0,0, 0,2,0,0],  // Two-note hits — lighter texture
+        'DyadSparse':  [2,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],  // Minimal dyads only
+        'OctaveStab':  [4,0,0,0, 0,0,4,0, 0,0,0,0, 4,0,0,0],  // Root+octave — punchy, less dense
+        'DyadArp':     [2,0,3,0, 0,3,0,2, 2,0,0,3, 0,0,3,0],  // Dyad + single notes blend
+        // --- ARPEGGIOS (melodic motion)
+        'Arpeggio':    [3,0,3,0, 3,0,3,0, 3,0,3,0, 3,0,3,0],  // 8th-note arpeggio
         'SlowArp':     [3,0,0,0, 3,0,0,0, 3,0,0,0, 3,0,0,0],  // Quarter-note arpeggio — gentle
-        'SyncArp':     [3,0,0,3, 0,3,0,0, 3,0,0,3, 0,0,3,0],  // Syncopated — interweaves with bass
+        'SyncArp':     [3,0,0,3, 0,3,0,0, 3,0,0,3, 0,0,3,0],  // Syncopated
         'RollingArp':  [3,0,0,0, 0,3,0,0, 0,0,3,0, 0,0,0,3],  // Cascading down — dreamy
-        // --- BROKEN CHORD (mix chord + single notes — most "lo-fi" feeling)
+        // --- SPARSE / SINGLE-NOTE FOCUSED (less chord-heavy)
+        'SingleLine':  [3,0,0,3, 0,0,3,0, 3,0,0,0, 0,3,0,0],  // Single notes only — no full chords
+        'CallResponse':[1,0,0,0, 0,0,3,0, 0,0,0,0, 0,3,0,0],  // Chord on 1, melodic response on 3
+        'PadTouch':    [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // Ultra minimal — one chord per bar
+        'PassingFill': [3,0,5,0, 0,3,0,5, 3,0,0,0, 0,5,0,3],  // Arp + passing tones
+        // --- BROKEN CHORD (mix chord + single notes)
         'Broken':      [1,0,0,3, 0,0,3,0, 1,0,0,0, 0,3,0,0],  // Chord, then melody notes respond
         'DreamBroken': [1,0,0,0, 0,0,0,3, 0,0,0,0, 0,3,0,0],  // Very sparse — chord and echoes
         'WaltzBroken': [1,0,0,0, 3,0,3,0, 0,0,0,0, 3,0,3,0],  // Waltz: chord then arp fill
         'Sparse':      [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,1,0],  // Ultra minimal — two hits, max space
+    };
+    // Mood weights: which patterns to favor per mood (hash-driven selection)
+    const PIANO_MOOD_WEIGHTS = {
+        Chill:      ['Block','BlockSlow','Sparse','DyadSparse','PadTouch','SlowArp','SoftStab'],
+        Dreamy:     ['Arpeggio','SlowArp','RollingArp','SingleLine','DreamBroken','PadTouch','Sparse'],
+        Groovy:     ['Comping','NeoSoulComp','Bounce','DyadPulse','DyadArp','RhodesHit','OffbeatChord'],
+        Uplifting:  ['Bounce','Comping','Arpeggio','Broken','OctaveStab','RhodesHit'],
+        Warm:       ['SoftStab','Broken','WaltzBroken','DyadArp','CallResponse','SlowArp']
+    };
+    const PIANO_INTRO_POOL = ['Sparse','SingleLine','SlowArp','PadTouch','DreamBroken','DyadSparse'];
+    const PIANO_PATTERNS_34 = {
+        'Waltz':       [1,0,0,0, 0,3,0,0, 0,3,0,0],
+        'Block34':     [1,0,0,0, 0,0,0,0, 1,0,0,0],
+        'Arp34':       [3,0,3,0, 3,0,3,0, 3,0,3,0],
+        'Sparse34':    [1,0,0,0, 0,0,0,0, 0,0,1,0],
+        'Dyad34':      [2,0,0,0, 0,0,2,0, 2,0,0,0],
+        'Single34':    [3,0,3,0, 0,3,0,0, 3,0,0,0],
     };
     // --- LOFI ACCORDION PATTERNS. 0=rest, 1=full chord (sustained), 3=arpeggio note (16-step)
     // Accordion plays held chords and gentle melodic fills — breathing, warm, lo-fi texture
@@ -962,6 +1009,11 @@
         'Duet':     [1,0,0,0, 0,0,3,0, 0,0,0,0, 0,3,0,0],  // Chord with melodic response
         'Lullaby':  [1,0,0,0, 0,0,0,3, 0,0,1,0, 0,0,0,0],  // Soft rocking pattern
         'Mist':     [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],  // Ghost-like single appearance
+    };
+    const ACCORDION_PATTERNS_34 = {
+        'Waltz':    [1,0,0,0, 0,3,0,0, 0,0,0,0],
+        'Sustain':  [1,0,0,0, 0,0,0,0, 0,0,0,0],
+        'Gentle':   [1,0,0,0, 0,0,0,0, 1,0,0,0],
     };
     // --- HI-HAT PATTERNS. 0=rest, 1=closed, 2=ghost (soft), 3=open, 4=accent (loud closed) (16-step)
     // Colorful = mixing articulations, rolls, accents, and open/closed contrasts.
@@ -991,6 +1043,11 @@
         'Lazy':        [0,0,1,0, 0,0,0,1, 0,0,1,0, 0,0,0,0],  // Behind the beat
         'GhostRide':   [2,0,2,0, 1,0,2,0, 2,0,2,0, 1,0,2,0],  // Ghost-heavy ride feel
         'Offbeat':     [0,0,4,0, 0,0,4,0, 0,0,4,0, 0,0,4,0],  // Accented offbeat only
+    };
+    const HIHAT_PATTERNS_34 = {
+        'Waltz':    [1,0,1,0, 1,0,1,0, 1,0,1,0],
+        'Sparse':   [1,0,0,0, 0,0,1,0, 1,0,0,0],
+        'Triplet':  [1,0,2,0, 1,0,2,0, 1,0,2,0],
     };
     // --- LOFI HIT PROGRESSIONS ONLY (~80 major + ~80 minor). Soul, jazz, nostalgic.
     const FAMOUS_PROGRESSIONS = {
@@ -1133,29 +1190,29 @@
     // Faster attacks + higher modulationIndex = more presence and punch for hip-hop groove.
     const BASS_PATCHES = [
         // 808 punch — fast attack, long sustain, classic hip-hop
-        { harmonicity: 1, modulationIndex: 1.2, envelope: { attack: 0.005, decay: 0.35, sustain: 0.75, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 }, volume: -8 },
+        { harmonicity: 1, modulationIndex: 1.2, envelope: { attack: 0.005, decay: 0.35, sustain: 0.75, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 }, volume: -4 },
         // Boom-bap sub — round but punchy
-        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.3, sustain: 0.7, release: 0.7 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.05, release: 0.25 }, volume: -7 },
+        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.3, sustain: 0.7, release: 0.7 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.05, release: 0.25 }, volume: -3 },
         // Deep 808 tail — long decay for sustained pressure
-        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.6, sustain: 0.8, release: 1.2 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.06, release: 0.35 }, volume: -8 },
+        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.6, sustain: 0.8, release: 1.2 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.06, release: 0.35 }, volume: -4 },
         // Tight punch — shortest decay, locks with kick
-        { harmonicity: 1, modulationIndex: 1.8, envelope: { attack: 0.002, decay: 0.25, sustain: 0.5, release: 0.5 }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.2 }, volume: -7 },
+        { harmonicity: 1, modulationIndex: 1.8, envelope: { attack: 0.002, decay: 0.25, sustain: 0.5, release: 0.5 }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.2 }, volume: -3 },
         // Moog groove — warm with modulation presence
-        { harmonicity: 1, modulationIndex: 2, envelope: { attack: 0.008, decay: 0.35, sustain: 0.7, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.3 }, volume: -8 },
+        { harmonicity: 1, modulationIndex: 2, envelope: { attack: 0.008, decay: 0.35, sustain: 0.7, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.3 }, volume: -4 },
         // Rubber bounce — funky, bouncy hip-hop feel
-        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.005, decay: 0.3, sustain: 0.65, release: 0.6 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.05, release: 0.25 }, volume: -8 },
+        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.005, decay: 0.3, sustain: 0.65, release: 0.6 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.05, release: 0.25 }, volume: -4 },
         // Lo-fi tape bass — saturated warmth with attack
-        { harmonicity: 1, modulationIndex: 2.2, envelope: { attack: 0.004, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.18, sustain: 0.1, release: 0.3 }, volume: -8 },
+        { harmonicity: 1, modulationIndex: 2.2, envelope: { attack: 0.004, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.18, sustain: 0.1, release: 0.3 }, volume: -4 },
         // Dilla pocket — medium everything, groovy
-        { harmonicity: 0.5, modulationIndex: 1.2, envelope: { attack: 0.008, decay: 0.4, sustain: 0.75, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.22, sustain: 0.08, release: 0.35 }, volume: -8 },
+        { harmonicity: 0.5, modulationIndex: 1.2, envelope: { attack: 0.008, decay: 0.4, sustain: 0.75, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.22, sustain: 0.08, release: 0.35 }, volume: -4 },
         // Hard knock — tight, aggressive attack
-        { harmonicity: 1.5, modulationIndex: 2.5, envelope: { attack: 0.002, decay: 0.2, sustain: 0.45, release: 0.4 }, modulationEnvelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.15 }, volume: -7 },
+        { harmonicity: 1.5, modulationIndex: 2.5, envelope: { attack: 0.002, decay: 0.2, sustain: 0.45, release: 0.4 }, modulationEnvelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.15 }, volume: -3 },
         // Round hip-hop — clean, present
-        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.006, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.004, decay: 0.2, sustain: 0.06, release: 0.3 }, volume: -8 },
+        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.006, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.004, decay: 0.2, sustain: 0.06, release: 0.3 }, volume: -4 },
         // Fat sub — wide, sustained, fills the low end
-        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.5, sustain: 0.8, release: 1.0 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.08, release: 0.35 }, volume: -8 },
+        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.5, sustain: 0.8, release: 1.0 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.08, release: 0.35 }, volume: -4 },
         // Punchy synth bass — snappy, defined
-        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.28, sustain: 0.6, release: 0.6 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.04, release: 0.25 }, volume: -7 }
+        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.28, sustain: 0.6, release: 0.6 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.04, release: 0.25 }, volume: -3 }
     ];
     // Lead: very quiet background accent (no square — sine/triangle only, well behind the beat)
     const LEAD_PATCHES = [
@@ -1245,18 +1302,33 @@
         bpm: 75,
         barCount: 0,
         section: 'Verse',
+        timeSignature: '4/4',
+        stepsPerBar: 16,
         
         // HIT SONG VARIABLES
         trackMotif: [],
         drumPattern: [],
         bassPattern: [],   // 0=rest, 1=root, 2=fifth, 3=root up
         hihatPattern: [],  // 0=rest, 1=closed, 2=ghost, 3=open
-        pianoPattern: [],  // 0=rest, 1=full chord, 2=lighter voicing, 3=arpeggio note
+        pianoPattern: [],  // 0=rest, 1=chord, 2=dyad, 3=arpeggio, 4=octave, 5=passing
+        pianoPatternAlt: [],  // alternate pattern for bar alternation (hash-driven)
+        pianoPatternIntro: [],  // sparse pattern for Intro only (hash-driven)
+        pianoDensity: 0.85,  // 0.45-0.95: prob to play non-rest hits (hash-driven)
+        pianoUseBarAlternation: false,  // alternate patterns by bar (hash-driven)
         accordionPattern: [], // 0=rest, 1=full chord (sustained), 3=arpeggio note
         useSeventh: false, // 7th chords for Jazzy/Funk
         lastChordVoicing: null,
         activeLeadNote: null,
-        params: { swing: 0.04, drumDensity: 0.5 }
+        params: { swing: 0.04, drumDensity: 0.5 },
+        // Per-track note length variation (weighted pools — pick per note for organic feel)
+        bassDurations: ['8n','8n','4n','8n','16n','4n','2n'],
+        pianoChordDurations: ['4n','4n','2n','8n','4n'],
+        pianoArpDurations: ['8n','8n','16n','4n','8n'],
+        pianoDyadDurations: ['8n','4n','8n','8n'],
+        pianoOctaveDurations: ['4n','8n','4n'],
+        accordionChordDurations: ['2n','2n','1n','4n'],
+        accordionArpDurations: ['4n','8n','4n','16n'],
+        leadDurations: ['8n','4n','8n','16n']
     };
 
     // Nodes
@@ -1831,10 +1903,20 @@
         const hhKey = hhKeys[Math.floor(currentRNG() * hhKeys.length)];
         state.hihatPattern = [...HIHAT_PATTERNS[hhKey]];
 
-        // 5. Piano: rhythmic pattern (comping, arpeggios, broken chords)
-        const pianoKeys = Object.keys(PIANO_PATTERNS);
-        const pianoKey = pianoKeys[Math.floor(currentRNG() * pianoKeys.length)];
-        state.pianoPattern = [...PIANO_PATTERNS[pianoKey]];
+        // 5. Piano: mood-weighted pattern, density, bar alternation, intro pattern (all hash-driven)
+        const moodPool = PIANO_MOOD_WEIGHTS[state.mood] || Object.keys(PIANO_PATTERNS);
+        const poolKeys = moodPool.filter(k => PIANO_PATTERNS[k]);
+        const pickFromPool = () => poolKeys[Math.floor(currentRNG() * poolKeys.length)];
+        state.pianoDensity = 0.45 + currentRNG() * 0.5;  // 0.45–0.95
+        state.pianoUseBarAlternation = currentRNG() < 0.4;  // 40% tracks alternate
+        const mainKey = pickFromPool();
+        state.pianoPattern = [...PIANO_PATTERNS[mainKey]];
+        state.pianoPatternAlt = state.pianoUseBarAlternation ? (() => {
+            const altKeys = poolKeys.filter(k => k !== mainKey);
+            return altKeys.length ? [...PIANO_PATTERNS[altKeys[Math.floor(currentRNG() * altKeys.length)]]] : state.pianoPattern.slice();
+        })() : [];
+        const introPool = PIANO_INTRO_POOL.filter(k => PIANO_PATTERNS[k]);
+        state.pianoPatternIntro = introPool.length ? [...PIANO_PATTERNS[introPool[Math.floor(currentRNG() * introPool.length)]]] : state.pianoPattern.slice();
 
         // 6. Accordion: breathing sustained chords and gentle fills
         const accKeys = Object.keys(ACCORDION_PATTERNS);
@@ -1844,6 +1926,52 @@
         state.useSeventh = (state.style === 'Jazzy' || state.style === 'Neo-Soul' || state.style === 'Vintage' || state.style === 'Chill Hop');
         state.lastChordVoicing = null;
 
+        // --- NOTE LENGTH VARIATION: per-track duration pools (shuffle weights for variety)
+        const DURATION_POOLS = {
+            bass: [['16n','8n','8n','4n','8n','4n','2n'], ['8n','8n','8n','4n','16n'], ['4n','8n','8n','8n','2n'], ['8n','16n','8n','4n','8n']],
+            pianoChord: [['4n','4n','2n','8n','4n'], ['2n','4n','4n','4n'], ['4n','8n','4n','2n'], ['4n','4n','4n','8n','2n']],
+            pianoArp: [['8n','8n','16n','4n'], ['8n','16n','8n','8n'], ['4n','8n','8n','16n'], ['8n','8n','4n','16n']],
+            pianoDyad: [['8n','4n','8n','8n'], ['4n','8n','4n'], ['8n','8n','4n','8n']],
+            pianoOctave: [['4n','8n','4n'], ['4n','4n','8n'], ['8n','4n']],
+            accChord: [['2n','2n','1n','4n'], ['2n','4n','2n'], ['1n','2n','2n'], ['2n','2n','2n','4n']],
+            accArp: [['4n','8n','4n','16n'], ['4n','4n','8n'], ['8n','4n','4n'], ['4n','16n','4n']],
+            lead: [['8n','4n','8n','16n'], ['8n','8n','4n'], ['4n','8n','16n'], ['8n','8n','8n','4n']]
+        };
+        state.bassDurations = DURATION_POOLS.bass[Math.floor(currentRNG() * DURATION_POOLS.bass.length)];
+        state.pianoChordDurations = DURATION_POOLS.pianoChord[Math.floor(currentRNG() * DURATION_POOLS.pianoChord.length)];
+        state.pianoArpDurations = DURATION_POOLS.pianoArp[Math.floor(currentRNG() * DURATION_POOLS.pianoArp.length)];
+        state.pianoDyadDurations = DURATION_POOLS.pianoDyad[Math.floor(currentRNG() * DURATION_POOLS.pianoDyad.length)];
+        state.pianoOctaveDurations = DURATION_POOLS.pianoOctave[Math.floor(currentRNG() * DURATION_POOLS.pianoOctave.length)];
+        state.accordionChordDurations = DURATION_POOLS.accChord[Math.floor(currentRNG() * DURATION_POOLS.accChord.length)];
+        state.accordionArpDurations = DURATION_POOLS.accArp[Math.floor(currentRNG() * DURATION_POOLS.accArp.length)];
+        state.leadDurations = DURATION_POOLS.lead[Math.floor(currentRNG() * DURATION_POOLS.lead.length)];
+
+        // --- TIME SIGNATURE: 4/4 (default), 3/4, or 6/8 for variety
+        const timeSigKeys = Object.keys(TIME_SIGNATURES);
+        const timeSigKey = timeSigKeys[Math.floor(currentRNG() * timeSigKeys.length)];
+        state.timeSignature = timeSigKey;
+        state.stepsPerBar = TIME_SIGNATURES[timeSigKey].stepsPerBar;
+        // Use dedicated 3/4 & 6/8 patterns when applicable
+        if (state.stepsPerBar === 12) {
+            const d34 = Object.keys(DRUM_LOOPS_34);
+            const b34 = Object.keys(BASS_PATTERNS_34);
+            const p34 = Object.keys(PIANO_PATTERNS_34);
+            const intro34 = ['Sparse34','Single34','Arp34','Dyad34'];
+            const a34 = Object.keys(ACCORDION_PATTERNS_34);
+            const h34 = Object.keys(HIHAT_PATTERNS_34);
+            state.drumPattern = [...DRUM_LOOPS_34[d34[Math.floor(currentRNG() * d34.length)]]];
+            state.bassPattern = [...BASS_PATTERNS_34[b34[Math.floor(currentRNG() * b34.length)]]];
+            const main34 = p34[Math.floor(currentRNG() * p34.length)];
+            state.pianoPattern = [...PIANO_PATTERNS_34[main34]];
+            state.pianoPatternAlt = state.pianoUseBarAlternation ? (() => {
+                const alt34 = p34.filter(k => k !== main34);
+                return alt34.length ? [...PIANO_PATTERNS_34[alt34[Math.floor(currentRNG() * alt34.length)]]] : state.pianoPattern.slice();
+            })() : [];
+            state.pianoPatternIntro = [...PIANO_PATTERNS_34[intro34[Math.floor(currentRNG() * intro34.length)]]];
+            state.accordionPattern = [...ACCORDION_PATTERNS_34[a34[Math.floor(currentRNG() * a34.length)]]];
+            state.hihatPattern = [...HIHAT_PATTERNS_34[h34[Math.floor(currentRNG() * h34.length)]]];
+        }
+
         // --- 10x SOUND VARIATION: pick lofi hit patches per track
         const keyIdx = Math.floor(currentRNG() * KEY_PATCHES.length);
         const padIdx = Math.floor(currentRNG() * PAD_PATCHES.length);
@@ -1852,10 +1980,25 @@
         const accIdx = Math.floor(currentRNG() * ACCORDION_PATCHES.length);
         const effectIdx = Math.floor(currentRNG() * EFFECT_PRESETS.length);
         const drumIdx = Math.floor(currentRNG() * DRUM_TONES.length);
-        keys.set(KEY_PATCHES[keyIdx]);
+        // Piano: base patch + per-track micro-variation (harmonicity, envelope, volume) so each song sounds distinct
+        const keyBase = KEY_PATCHES[keyIdx];
+        const keyVar = {
+            ...keyBase,
+            harmonicity: Math.max(1.5, Math.min(7, keyBase.harmonicity * (0.85 + currentRNG() * 0.3))),
+            modulationIndex: Math.max(2, Math.min(7, keyBase.modulationIndex * (0.9 + currentRNG() * 0.25))),
+            envelope: {
+                ...keyBase.envelope,
+                decay: keyBase.envelope.decay * (0.8 + currentRNG() * 0.4),
+                sustain: Math.max(0.15, Math.min(0.5, keyBase.envelope.sustain * (0.85 + currentRNG() * 0.35))),
+                release: keyBase.envelope.release * (0.85 + currentRNG() * 0.35)
+            },
+            volume: Math.max(-10, Math.min(-4, keyBase.volume + (currentRNG() - 0.5) * 3))
+        };
+        keys.set(keyVar);
         pad.set(PAD_PATCHES[padIdx]);
         const bassPatch = BASS_PATCHES[bassIdx];
-        bass.set({ ...bassPatch, modulationIndex: Math.min(bassPatch.modulationIndex || 1.2, 2) }); // Cap FM to avoid harsh/strange bass artifacts
+        const bassVol = Math.min(0, (bassPatch.volume || -4) + 4);  // +4 dB boost (was too low)
+        bass.set({ ...bassPatch, modulationIndex: Math.min(bassPatch.modulationIndex || 1.2, 2), volume: bassVol });
         lead.set(LEAD_PATCHES[leadIdx]);
         accordion.set(ACCORDION_PATCHES[accIdx]);
         const ep = EFFECT_PRESETS[effectIdx];
@@ -1907,7 +2050,7 @@
             document.getElementById('bar-artist').innerText = meta.artist;
             document.getElementById('style-badge').innerText = state.style;
             document.getElementById('mood-badge').innerText = state.mood; 
-            document.getElementById('bpm-badge').innerText = `${state.bpm} BPM`;
+            document.getElementById('bpm-badge').innerText = `${state.bpm} BPM • ${state.timeSignature}`;
             
             let color = config.color;
             if(state.mood === 'Uplifting') color = '#10b981'; 
@@ -2038,11 +2181,12 @@
             Tone.Transport.start("+0.1");
         }
         let step = 0;
+        const stepsPerBar = state.stepsPerBar;
         // Seeded RNG for deterministic sequencer behavior — re-seeded each track for variety
         let seqRNG = mulberry32(state.currentSeed + 77777);
 
         Tone.Transport.scheduleRepeat((time) => {
-            const patIdx = step % 16;
+            const patIdx = step % stepsPerBar;
             const sixteenth = step % 4; 
             const config = STYLES[state.style];
 
@@ -2055,6 +2199,7 @@
             const isIntro = state.section === 'Intro';
             const isVerse = state.section === 'Verse';
             const isChorus = state.section === 'Chorus';
+            const isClimax = state.section === 'Climax';
             const isBreakdown = state.section === 'Breakdown';
 
             // Current chord with voice leading for smooth transitions (octave 4 for piano register)
@@ -2063,66 +2208,88 @@
             const rawNotes = getChord(degree, state.scale, 4, state.useSeventh);
             const notes = voiceLead(rawNotes, state.lastChordVoicing);
 
-            // ─── PIANO ─── The LEAD voice — own reverb path, bypasses lowpass filter.
-            const pianoVal = state.pianoPattern[patIdx];
-            if (pianoVal > 0 && !isBreakdown) {
+            // ─── PIANO ─── Hash-driven: section pattern, bar alternation, density, articulations 1–5
+            const effPattern = isIntro && state.pianoPatternIntro.length ? state.pianoPatternIntro
+                : (state.pianoUseBarAlternation && state.pianoPatternAlt.length && (state.barCount % 2 === 1)) ? state.pianoPatternAlt
+                : state.pianoPattern;
+            const pianoVal = effPattern[patIdx] || 0;
+            const passDensity = pianoVal > 0 && seqRNG() < (state.pianoDensity || 0.85);
+            if (pianoVal > 0 && !isBreakdown && passDensity) {
                 if (pianoVal === 1) {
-                    // Full chord — quarter note for sustain, high velocity to cut through
-                    const chordVel = isChorus ? (0.6 + seqRNG() * 0.15) : (0.45 + seqRNG() * 0.12);
-                    keys.triggerAttackRelease(notes, "4n", t, chordVel);
+                    const chordVel = isClimax ? (0.72 + seqRNG() * 0.18) : isChorus ? (0.6 + seqRNG() * 0.15) : (0.45 + seqRNG() * 0.12);
+                    const chordDur = state.pianoChordDurations[Math.floor(seqRNG() * state.pianoChordDurations.length)];
+                    keys.triggerAttackRelease(notes, chordDur, t, chordVel);
+                } else if (pianoVal === 2) {
+                    const dyad = [notes[0], notes[2]];
+                    const dyadVel = isClimax ? (0.5 + seqRNG() * 0.15) : (0.4 + seqRNG() * 0.12);
+                    const dyadDur = (state.pianoDyadDurations || ['8n','4n'])[Math.floor(seqRNG() * (state.pianoDyadDurations || ['8n']).length)];
+                    keys.triggerAttackRelease(dyad, dyadDur, t, dyadVel);
                 } else if (pianoVal === 3) {
-                    // Arpeggio — eighth note single chord tones, melodic and clear
                     const noteIdx = Math.floor(step / 2) % notes.length;
                     const arpVel = 0.4 + seqRNG() * 0.12;
-                    keys.triggerAttackRelease(notes[noteIdx], "8n", t, arpVel);
+                    const arpDur = state.pianoArpDurations[Math.floor(seqRNG() * state.pianoArpDurations.length)];
+                    keys.triggerAttackRelease(notes[noteIdx], arpDur, t, arpVel);
+                } else if (pianoVal === 4) {
+                    const oct = [notes[0], Tone.Frequency(notes[0]).transpose(12).toNote()];
+                    const octVel = isClimax ? (0.5 + seqRNG() * 0.12) : (0.38 + seqRNG() * 0.1);
+                    const octDur = (state.pianoOctaveDurations || ['4n','8n'])[Math.floor(seqRNG() * (state.pianoOctaveDurations || ['4n']).length)];
+                    keys.triggerAttackRelease(oct, octDur, t, octVel);
+                } else if (pianoVal === 5) {
+                    const passIdx = Math.min(2, notes.length - 1);
+                    const passVel = 0.35 + seqRNG() * 0.1;
+                    const passDur = state.pianoArpDurations[Math.floor(seqRNG() * state.pianoArpDurations.length)];
+                    keys.triggerAttackRelease(notes[passIdx], passDur, t, passVel);
                 }
             }
             // Update voice leading reference on bar start
-            if (step % 16 === 0) {
+            if (step % stepsPerBar === 0) {
                 state.lastChordVoicing = notes;
             }
             // Pad: only in breakdowns as ambient fill — very gentle wash
-            if (step % 16 === 0 && isBreakdown && seqRNG() > 0.5) {
+            if (step % stepsPerBar === 0 && isBreakdown && seqRNG() > 0.5) {
                 const padNotes = getChord(degree, state.scale, 3, false);
                 pad.triggerAttackRelease(padNotes.slice(0, 3), "1m", t, 0.05);
             }
 
-            // Chord anticipation: rare rhythmic push (8% in chorus only)
-            if (step % 16 === 14 && isChorus && seqRNG() < 0.08) {
+            // Chord anticipation: rhythmic push — 8% in chorus, 18% in climax (louder on climax)
+            const anticStep = (stepsPerBar - 2);
+            if (step % stepsPerBar === anticStep && (isChorus || isClimax) && seqRNG() < (isClimax ? 0.18 : 0.08)) {
                 const nextDeg = state.progression[(state.barCount + 1) % 4];
                 const antNotes = getChord(nextDeg, state.scale, 4, state.useSeventh);
-                keys.triggerAttackRelease(antNotes, "16n", t, 0.15);
+                keys.triggerAttackRelease(antNotes, "16n", t, isClimax ? 0.28 : 0.15);
             }
 
             // ─── ACCORDION ─── Warm reed pads and gentle fills — lo-fi texture layer
-            // Plays in Verse and Breakdown for warmth, complements piano
+            // Plays in Verse and Breakdown for warmth, complements piano; joins climax for fullness
             const accVal = state.accordionPattern[patIdx];
             if (accVal > 0 && !isIntro) {
-                // Accordion plays most in Verse/Breakdown, lighter in Chorus (piano leads there)
-                const accActive = isBreakdown || isVerse || (isChorus && seqRNG() < 0.3);
+                // Accordion plays most in Verse/Breakdown, lighter in Chorus, full in Climax for richness
+                const accActive = isBreakdown || isVerse || isClimax || (isChorus && seqRNG() < 0.3);
                 if (accActive) {
                     // Use octave 3 for warm, low register — sits under the piano
                     const accNotes = getChord(degree, state.scale, 3, state.useSeventh);
                     const accVoiced = voiceLead(accNotes, state.lastChordVoicing);
                     if (accVal === 1) {
-                        // Sustained chord — gentle, breathing
-                        const accVel = isBreakdown ? (0.1 + seqRNG() * 0.06) : (0.14 + seqRNG() * 0.08);
-                        accordion.triggerAttackRelease(accVoiced.slice(0, 3), "2n", t, accVel);
+                        // Sustained chord — varied length (2n/1n/4n); climax brings more presence
+                        const accVel = isClimax ? (0.2 + seqRNG() * 0.1) : isBreakdown ? (0.1 + seqRNG() * 0.06) : (0.14 + seqRNG() * 0.08);
+                        const accChordDur = state.accordionChordDurations[Math.floor(seqRNG() * state.accordionChordDurations.length)];
+                        accordion.triggerAttackRelease(accVoiced.slice(0, 3), accChordDur, t, accVel);
                     } else if (accVal === 3) {
-                        // Single arpeggio note — melodic fill
+                        // Single arpeggio note — varied length for melodic fill
                         const noteIdx = Math.floor(step / 4) % accVoiced.length;
                         const arpVel = 0.1 + seqRNG() * 0.06;
-                        accordion.triggerAttackRelease(accVoiced[noteIdx], "4n", t, arpVel);
+                        const accArpDur = state.accordionArpDurations[Math.floor(seqRNG() * state.accordionArpDurations.length)];
+                        accordion.triggerAttackRelease(accVoiced[noteIdx], accArpDur, t, arpVel);
                     }
                 }
             }
 
             // ─── BASS ─── Hip-hop sub — punchy, always present in verse+chorus, follows the chord.
-            // Derives notes directly from getChord() at octave 2 for deep sub.
+            // Octave 3 for presence (octave 2 was too low / inaudible on many speakers)
             if (!isIntro) {
                 const bpVal = state.bassPattern[patIdx];
                 if (bpVal > 0) {
-                    const bassChord = getChord(degree, state.scale, 2, state.useSeventh);
+                    const bassChord = getChord(degree, state.scale, 3, state.useSeventh);
                     let bassNote;
                     if (bpVal === 1) {
                         bassNote = bassChord[0];
@@ -2132,13 +2299,14 @@
                         bassNote = bassChord[2];
                     } else if (bpVal === 7) {
                         const nextDeg = state.progression[(state.barCount + 1) % 4];
-                        const nextChord = getChord(nextDeg, state.scale, 2, false);
+                        const nextChord = getChord(nextDeg, state.scale, 3, false);
                         bassNote = nextChord[0];
                     }
                     if (bassNote) {
-                        // Breakdown: quieter bass, Verse/Chorus: full punch
-                        const bassVel = isBreakdown ? (0.2 + seqRNG() * 0.1) : (0.5 + seqRNG() * 0.15);
-                        bass.triggerAttackRelease(bassNote, "8n", t, bassVel);
+                        // Breakdown: quieter bass, Verse/Chorus: full punch, Climax: peak drive
+                        const bassVel = isClimax ? (0.6 + seqRNG() * 0.2) : isBreakdown ? (0.2 + seqRNG() * 0.1) : (0.5 + seqRNG() * 0.15);
+                        const bassDur = state.bassDurations[Math.floor(seqRNG() * state.bassDurations.length)];
+                        bass.triggerAttackRelease(bassNote, bassDur, t, bassVel);
                     }
                 }
             }
@@ -2146,7 +2314,7 @@
             // ─── LEAD MELODY ─── (whisper-quiet — ambient color from chord tones, not a competing line)
             // Lead picks from the SAME chord the piano and bass are playing — everything matches.
             if (config.hasLead && !isIntro && !isBreakdown) {
-                const leadProb = isChorus ? 0.08 : (isVerse ? 0.02 : 0);
+                const leadProb = isClimax ? 0.22 : isChorus ? 0.08 : (isVerse ? 0.02 : 0);
                 // Play on half-beats (step % 8) not every beat — more space, more relaxing
                 if (leadProb > 0 && seqRNG() < leadProb && step % 8 === 0) {
                     // Use a chord tone from the current chord (octave 5 for shimmer above piano)
@@ -2160,18 +2328,19 @@
                         leadNote = state.trackMotif[motifIdx];
                     }
                     if (leadNote) {
-                        const leadVel = isChorus ? (0.06 + seqRNG() * 0.04) : (0.04 + seqRNG() * 0.03);
-                        lead.triggerAttackRelease(leadNote, "8n", t, leadVel);
+                        const leadVel = isClimax ? (0.1 + seqRNG() * 0.06) : isChorus ? (0.06 + seqRNG() * 0.04) : (0.04 + seqRNG() * 0.03);
+                        const leadDur = state.leadDurations[Math.floor(seqRNG() * state.leadDurations.length)];
+                        lead.triggerAttackRelease(leadNote, leadDur, t, leadVel);
                     }
                 }
             }
 
             // ─── DRUMS ─── Dynamic hip-hop groove with velocity accents and fills
             if (!isIntro && !isBreakdown) {
-                // --- KICK --- Velocity accents: beat 1 is louder, chorus hits harder
+                // --- KICK --- Velocity accents: beat 1 is louder, chorus hits harder, climax peaks
                 if (state.drumPattern[patIdx] === 1) {
                     const beatOneBoost = (patIdx === 0) ? 0.1 : 0; // Accent beat 1
-                    const sectionBoost = isChorus ? 0.08 : 0;
+                    const sectionBoost = isClimax ? 0.15 : isChorus ? 0.08 : 0;
                     const kickVel = Math.min(0.95, 0.65 + seqRNG() * 0.2 + beatOneBoost + sectionBoost);
                     kick.triggerAttackRelease("C1", "8n", t, kickVel);
                 }
@@ -2180,18 +2349,20 @@
                     kick.triggerAttackRelease("C1", "16n", t, 0.12 + seqRNG() * 0.08);
                 }
 
-                // --- SNARE --- Accented on main hits, ghost snares for shuffle
+                // --- SNARE --- Accented on main hits, ghost snares for shuffle; climax hits harder
                 if (state.drumPattern[patIdx] === 2) {
-                    const snareAccent = (patIdx === 4 || patIdx === 12) ? 0.1 : 0; // Backbeat accent
-                    const snareVel = Math.min(0.9, 0.55 + seqRNG() * 0.2 + snareAccent);
+                    const snareAccent = (patIdx === 4 || patIdx === Math.floor(stepsPerBar * 0.75)) ? 0.1 : 0; // Backbeat accent
+                    const climaxBoost = isClimax ? 0.12 : 0;
+                    const snareVel = Math.min(0.95, 0.55 + seqRNG() * 0.2 + snareAccent + climaxBoost);
                     snare.triggerAttackRelease("16n", t, snareVel);
                 }
                 // Ghost snare: fills the space between main hits (6%)
                 if (state.drumPattern[patIdx] === 0 && (sixteenth === 1 || sixteenth === 3) && seqRNG() < 0.06) {
                     snare.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.06);
                 }
-                // Snare fill: 16th-note roll on last beat of every 4th bar
-                if (state.barCount % 4 === 3 && patIdx >= 13 && seqRNG() < 0.5) {
+                // Snare fill: roll on last beat of every 4th bar; more frequent in climax
+                const fillStart = Math.max(stepsPerBar - 4, 0);
+                if (state.barCount % 4 === 3 && patIdx >= fillStart && seqRNG() < (isClimax ? 0.75 : 0.5)) {
                     snare.triggerAttackRelease("32n", t, 0.15 + seqRNG() * 0.1);
                 }
 
@@ -2222,8 +2393,9 @@
                         hihat.triggerAttackRelease("32n", t, 0.28 + seqRNG() * 0.12);
                     }
                 }
-                // Hi-hat fill: 32nd-note burst on last beat of every 8th bar
-                if (state.barCount % 8 === 7 && patIdx >= 14 && seqRNG() < 0.6) {
+                // Hi-hat fill: 32nd-note burst on last beat of every 8th bar; more in climax
+                const hhFillStart = Math.max(stepsPerBar - 3, 0);
+                if (state.barCount % 8 === 7 && patIdx >= hhFillStart && seqRNG() < (isClimax ? 0.85 : 0.6)) {
                     if (hihat.frequency) hihat.frequency.value = 160 + seqRNG() * 60;
                     hihat.triggerAttackRelease("64n", t, 0.18 + seqRNG() * 0.1);
                 }
@@ -2240,7 +2412,7 @@
                     hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.05);
                 }
                 // Occasional open hat swell in breakdown
-                if (step % 16 === 0 && seqRNG() < 0.3) {
+                if (step % stepsPerBar === 0 && seqRNG() < 0.3) {
                     if (hihat.frequency) hihat.frequency.value = 160 + seqRNG() * 40;
                     if (hihat.envelope) hihat.envelope.decay = 0.08;
                     hihat.triggerAttackRelease("8n", t, 0.1 + seqRNG() * 0.06);
@@ -2250,16 +2422,17 @@
             // Foley texture (deterministic occasional)
             if (seqRNG() < 0.003) foley.triggerAttackRelease("32n", t, 0.12);
 
-            step = (step + 1) % 16;
+            step = (step + 1) % stepsPerBar;
             if (step === 0) {
                 state.barCount++;
-                // Song structure: Intro(4 bars) → [Verse(4) → Chorus(8) → Breakdown(4)] cycle
+                // Song structure: Intro(4) → [Verse(4) → Chorus(4) → Climax(4) → Breakdown(4)] cycle
                 if (state.barCount < 4) {
                     state.section = 'Intro';
                 } else {
                     const cycleBar = (state.barCount - 4) % 16;
                     if (cycleBar < 4) state.section = 'Verse';
-                    else if (cycleBar < 12) state.section = 'Chorus';
+                    else if (cycleBar < 8) state.section = 'Chorus';
+                    else if (cycleBar < 12) state.section = 'Climax';
                     else state.section = 'Breakdown';
                 }
             }
