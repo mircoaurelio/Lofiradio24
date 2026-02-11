@@ -334,6 +334,158 @@
         /* FADE UTILS */
         .fade-out { opacity: 0; }
         
+        /* --- SPOTIFY CANVAS: Looping video background --- */
+        .canvas-video-wrap {
+            position: fixed;
+            inset: -2px;              /* Bleed past edges to kill any seam */
+            z-index: 3;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none;
+            overflow: hidden;
+        }
+        .canvas-video-wrap.visible { opacity: 1; }
+
+        /* Invisible tap zone — top half of screen toggles canvas */
+        .canvas-tap-zone {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 50%;
+            z-index: 55;
+            pointer-events: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .canvas-video {
+            position: absolute;
+            top: -63px; left: 0;
+            width: 100%;
+            height: calc(100% + 63px);
+            object-fit: cover;
+            object-position: center top;
+        }
+        /* Hard-edge gradient strips: solid black → transparent to hide video seams */
+        .canvas-vignette-top {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 18px;
+            background: linear-gradient(to bottom, #050505 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .canvas-vignette-bottom {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 18px;
+            background: linear-gradient(to top, #050505 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .canvas-vignette-radial {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(5,5,5,0.45) 100%);
+            pointer-events: none;
+        }
+
+        /* Canvas track overlay (floating above player deck) */
+        .canvas-track-overlay {
+            display: none;
+            position: fixed;
+            bottom: 110px;
+            left: 0; right: 0;
+            z-index: 50;
+            padding: 0 24px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .canvas-track-overlay.visible { opacity: 1; }
+        .canvas-track-meta {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .canvas-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 0 2px 24px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5);
+            margin: 0 0 6px 0;
+        }
+        .canvas-artist {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 1px 12px rgba(0,0,0,0.8);
+            margin: 0;
+        }
+        .canvas-badges {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .canvas-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .canvas-badge.accent { background: var(--dynamic-color); color: #000; border-color: transparent; }
+        .canvas-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        .canvas-time {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.55);
+            font-variant-numeric: tabular-nums;
+            min-width: 32px;
+            text-align: center;
+        }
+        .canvas-prog-track {
+            flex: 1;
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .canvas-prog-fill {
+            height: 100%;
+            width: 0%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 10px;
+            transition: width 1s linear;
+        }
+        .canvas-scroll-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            animation: canvas-bounce 2.5s ease-in-out infinite;
+        }
+        .canvas-scroll-hint svg { opacity: 0.4; }
+        @keyframes canvas-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+        
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 900px) {
             #app-container {
@@ -446,6 +598,95 @@
                 -webkit-overflow-scrolling: touch;
             }
             .mobile-vibes::-webkit-scrollbar { display: none; }
+
+            /* --- Canvas active state --- */
+            .canvas-video-wrap { display: block; }
+            .canvas-track-overlay { display: block; }
+            .canvas-tap-zone { display: block; }
+
+            /* Smooth transitions for hero when canvas toggles */
+            .hero-layout {
+                transition: opacity 0.8s ease, transform 0.8s ease;
+            }
+            .mobile-vibes {
+                transition: opacity 0.6s ease;
+            }
+
+            /* Main stage: transparent glass, hero hidden, rest stays */
+            body.canvas-active .main-stage {
+                background: transparent !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                border-color: transparent !important;
+                box-shadow: none !important;
+            }
+            body.canvas-active .ambient-glow { opacity: 0 !important; }
+            body.canvas-active .noise-overlay { opacity: 0.15 !important; }
+
+            /* Hero fades out when canvas is active */
+            body.canvas-active .hero-layout {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: scale(0.96) !important;
+                position: absolute !important;
+                visibility: hidden;
+            }
+            body.canvas-active .mobile-vibes {
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+
+            /* Stage header: keep floating at top, glassmorphic */
+            body.canvas-active .stage-header {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                padding: 12px 0 16px;
+                opacity: 1;
+            }
+            body.canvas-active .live-tag {
+                background: rgba(255, 30, 30, 0.18);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255,255,255,0.06);
+            }
+            body.canvas-active .badge {
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255,255,255,0.06);
+            }
+
+            /* Queue: push below the fold — user must scroll to see it */
+            body.canvas-active .queue-section {
+                margin-top: calc(100vh - 220px);
+                background: rgba(0,0,0,0.35);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 20px;
+                padding-bottom: 140px; /* Extra space for player deck overlap */
+            }
+            body.canvas-active .queue-section::before {
+                content: 'Next Up';
+                display: block;
+                padding: 16px 16px 8px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: rgba(255,255,255,0.5);
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+            }
+            body.canvas-active .queue-row:hover {
+                background: rgba(255,255,255,0.08);
+            }
+
+            /* Player deck: translucent glass over video */
+            body.canvas-active .player-deck {
+                background: rgba(15,15,15,0.6) !important;
+                backdrop-filter: blur(24px) !important;
+                -webkit-backdrop-filter: blur(24px) !important;
+                border-color: rgba(255,255,255,0.08) !important;
+            }
         }
         @media (min-width: 901px) {
             .mobile-track-time { display: none !important; }
@@ -456,6 +697,38 @@
 
     <div class="ambient-glow" id="bg-glow"></div>
     <div class="noise-overlay"></div>
+
+    <!-- Spotify Canvas: looping video background (mobile, fades in after 30s) -->
+    <div class="canvas-video-wrap" id="canvas-container">
+        <video class="canvas-video" id="canvas-video" src="video.mp4" loop muted playsinline webkit-playsinline preload="auto"></video>
+        <div class="canvas-vignette-top"></div>
+        <div class="canvas-vignette-radial"></div>
+        <div class="canvas-vignette-bottom"></div>
+    </div>
+
+    <!-- Tap zone: top half of screen — tap to toggle canvas on/off -->
+    <div class="canvas-tap-zone" id="canvas-tap-zone"></div>
+
+    <!-- Canvas overlay: track info shown over the video when canvas is active -->
+    <div class="canvas-track-overlay" id="canvas-overlay">
+        <div class="canvas-track-meta">
+            <div class="canvas-badges" id="canvas-badges">
+                <span class="canvas-badge accent" id="canvas-style-badge">Classic</span>
+                <span class="canvas-badge" id="canvas-mood-badge">Chill</span>
+            </div>
+            <h2 class="canvas-title" id="canvas-title">—</h2>
+            <p class="canvas-artist" id="canvas-artist">—</p>
+        </div>
+        <div class="canvas-progress">
+            <span class="canvas-time" id="canvas-time-current">0:00</span>
+            <div class="canvas-prog-track"><div class="canvas-prog-fill" id="canvas-progress-bar"></div></div>
+            <span class="canvas-time" id="canvas-time-total">--:--</span>
+        </div>
+        <div class="canvas-scroll-hint" id="canvas-scroll-hint">
+            <span>Next up</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+        </div>
+    </div>
 
     <div id="app-container">
         
@@ -595,7 +868,7 @@
 
     // --- CONFIG ---
     const NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
-    const MOOD_SCALES = { 'Chill': ['Dorian', 'Major'], 'Uplifting': ['Major', 'Lydian'], 'Groovy': ['Mixolydian', 'Dorian'], 'Dreamy': ['Lydian', 'Major'], 'Warm': ['Major', 'Mixolydian'] };
+    const MOOD_SCALES = { 'Chill': ['Dorian', 'Minor', 'Major'], 'Uplifting': ['Major', 'Lydian'], 'Groovy': ['Mixolydian', 'Dorian', 'Minor'], 'Dreamy': ['Lydian', 'Major', 'Dorian'], 'Warm': ['Major', 'Mixolydian', 'Minor'] };
     const MODES = { 'Minor': [0, 2, 3, 5, 7, 8, 10], 'Dorian': [0, 2, 3, 5, 7, 9, 10], 'Major': [0, 2, 4, 5, 7, 9, 11], 'Lydian': [0, 2, 4, 6, 7, 9, 11], 'Phrygian': [0, 1, 3, 5, 7, 8, 10], 'Mixolydian': [0, 2, 4, 5, 7, 9, 10] };
 
     // --- Classic lo-fi hip hop / chill hop drums only (6 iconic patterns)
@@ -607,32 +880,75 @@
         'JazzHop': [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,1],
         'Backbeat': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0]
     };
-    // --- LOFI BASS PATTERNS ONLY (~50). 0=rest, 1=root, 2=fifth, 3=root up (16-step)
+    // --- DEEP LO-FI BASS LINES. Root-focused patterns that lock with the kick and anchor the chord.
+    // Values: 0=rest, 1=chord root, 3=chord 3rd, 5=chord 5th, 7=approach (next chord root).
+    // Deep sub bass needs SPACE — fewer notes, longer rests, root on beat 1. (16-step = 1 bar)
     const BASS_PATTERNS = {
-        'RootQuarter': [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], 'RootQuarter2': [1,0,1,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-        'RootFifth': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0], 'RootFifth2': [1,0,0,0, 2,0,0,0, 2,0,0,0, 1,0,0,0],
-        'RootFifth3': [1,0,2,0, 1,0,0,0, 1,0,2,0, 2,0,0,0], 'RootFifth4': [1,0,0,0, 2,0,0,0, 1,0,2,0, 1,0,0,0],
-        'Funk': [1,0,2,0, 0,1,0,0, 1,0,0,2, 0,0,1,0], 'Funk2': [1,0,0,2, 0,1,0,0, 1,0,2,0, 0,0,1,0],
-        'Funk3': [0,1,0,2, 1,0,0,0, 0,1,0,0, 2,0,1,0], 'Funk4': [1,0,2,0, 1,0,0,2, 0,1,0,0, 1,0,0,0],
-        'Walking': [1,0,2,0, 1,0,2,0, 1,0,2,0, 1,0,2,0], 'Walking2': [1,0,0,2, 1,0,2,0, 1,0,0,2, 1,0,0,0],
-        'Walking3': [2,0,1,0, 2,0,1,0, 1,0,2,0, 1,0,0,0], 'Walking4': [1,0,2,0, 2,0,1,0, 1,0,2,0, 2,0,1,0],
-        'Bounce': [1,0,0,1, 2,0,0,0, 1,0,0,2, 0,0,0,0], 'Bounce2': [1,0,0,0, 2,0,1,0, 1,0,0,2, 0,0,0,0],
-        'Bounce3': [1,0,1,0, 2,0,0,0, 1,0,0,0, 2,0,0,0], 'Bounce4': [1,0,0,1, 0,0,2,0, 1,0,0,0, 2,0,0,0],
-        'Sparse': [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0], 'Sparse2': [1,0,0,0, 2,0,0,0, 0,0,0,0, 0,0,0,0],
-        'Sparse3': [1,0,0,0, 0,0,0,0, 2,0,0,0, 1,0,0,0], 'Sparse4': [0,0,1,0, 0,0,2,0, 0,0,1,0, 0,0,0,0],
-        'Pedal': [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], 'Pedal2': [1,0,0,1, 1,0,0,0, 1,0,0,1, 1,0,0,0],
-        'Pedal3': [1,1,0,0, 1,0,0,1, 1,0,0,0, 1,0,0,0], 'Syncopated': [0,1,0,0, 2,0,1,0, 0,1,0,2, 0,0,1,0],
-        'Syncopated2': [1,0,0,2, 0,1,0,0, 2,0,1,0, 0,0,0,1], 'Syncopated3': [0,0,1,0, 1,0,0,2, 0,1,0,0, 2,0,1,0],
-        'Lofi': [1,0,0,0, 1,0,0,0, 2,0,0,0, 1,0,0,0], 'Lofi2': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0],
-        'Lofi3': [1,0,0,0, 0,0,1,0, 2,0,0,0, 1,0,0,0], 'Lofi4': [1,0,2,0, 0,0,0,0, 1,0,0,0, 2,0,0,0],
-        'Lofi5': [1,0,0,0, 2,0,0,0, 1,0,2,0, 0,0,0,0], 'Jazzy': [1,0,2,0, 1,0,0,2, 1,0,2,0, 2,0,1,0],
-        'Jazzy2': [1,0,0,2, 2,0,1,0, 1,0,2,0, 0,0,1,0], 'Jazzy3': [2,0,1,0, 1,0,2,0, 1,0,0,2, 1,0,0,0],
-        'Chill': [1,0,0,0, 1,0,0,0, 1,0,0,0, 2,0,0,0], 'Chill2': [1,0,0,0, 0,0,0,0, 2,0,0,0, 1,0,0,0],
-        'Chill3': [1,0,0,0, 2,0,0,0, 0,0,1,0, 0,0,0,0], 'Minimal': [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-        'Minimal2': [1,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], 'RootUp': [1,0,0,0, 3,0,0,0, 1,0,0,0, 3,0,0,0],
-        'RootUp2': [1,0,3,0, 1,0,0,0, 3,0,1,0, 0,0,0,0], 'Study': [1,0,0,0, 2,0,0,0, 1,0,0,0, 0,0,0,0],
-        'Study2': [1,0,0,0, 0,0,0,0, 2,0,0,0, 1,0,0,0], 'Nocturnal': [1,0,0,0, 0,0,1,0, 0,0,0,0, 2,0,0,0],
-        'Vintage': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0], 'Vintage2': [1,0,2,0, 1,0,0,0, 1,0,2,0, 1,0,0,0]
+        // --- DEEP & MINIMAL (anchor patterns — bass sits on root, gives space to piano)
+        'DeepRoot':    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],  // Root on 1 and 3 — classic lo-fi anchor
+        'SubHold':     [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // One long root per bar — ultra minimal
+        'Heartbeat':   [1,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,0,0],  // Root on 1 and 4 — heartbeat feel
+        'Pulse':       [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],  // Quarter-note root pulse — driving but deep
+        // --- ROOT + FIFTH (harmonic anchoring — outlines the chord with bass and piano together)
+        'RootFifth':   [1,0,0,0, 0,0,0,0, 5,0,0,0, 0,0,0,0],  // Root then 5th — strong harmonic frame
+        'FifthDown':   [5,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],  // 5th then root — inverted motion
+        'ChillSub':    [1,0,0,0, 5,0,0,0, 1,0,0,0, 5,0,0,0],  // Alternating root-5th — gentle rocking
+        // --- GROOVE (syncopated root patterns — lock with Dilla/boom-bap kick)
+        'GrooveSub':   [1,0,0,0, 0,0,5,0, 1,0,0,0, 0,0,0,0],  // Syncopated 5th anticipation
+        'DillaSub':    [1,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,5,0],  // Dilla pocket — late hits
+        'BoomBapSub':  [1,0,0,1, 0,0,0,0, 0,1,0,0, 0,0,0,0],  // Boom-bap kick-locked bass
+        'LazyGroove':  [0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],  // Behind-the-beat feel
+        // --- WALKING (chord-tone movement — matches piano chord changes)
+        'SoftWalk':    [1,0,0,0, 3,0,0,0, 5,0,0,0, 7,0,0,0],  // Root→3rd→5th→approach
+        'JazzWalk':    [1,0,0,0, 5,0,0,0, 3,0,0,0, 7,0,0,0],  // Root→5th→3rd→approach
+        'SoulWalk':    [1,0,0,0, 3,0,0,0, 1,0,0,0, 5,0,0,0],  // Root-3rd-root-5th — soulful
+        'GentleWalk':  [1,0,0,0, 0,0,3,0, 5,0,0,0, 0,0,7,0],  // Sparse walking with rests
+        // --- BOUNCE (rhythmic variation — pairs with syncopated piano comping)
+        'Bounce':      [1,0,0,1, 0,0,0,0, 5,0,0,0, 0,0,0,0],  // Octave bounce then 5th
+        'SlowBounce':  [1,0,0,0, 0,0,1,0, 0,0,0,0, 5,0,0,0],  // Gentle syncopated bounce
+        'RnBSub':      [1,0,0,0, 0,0,3,0, 5,0,0,0, 0,0,0,0],  // R&B pocket — root, late 3rd, 5th
+        'NeoSoul':     [1,0,0,0, 0,0,0,0, 3,0,0,0, 0,0,7,0],  // Neo-soul approach — root, 3rd, walk to next
+    };
+    // --- LOFI PIANO PATTERNS. 0=rest, 1=full chord, 3=arpeggio note (single chord tone) (16-step)
+    // Piano is the melodic lead — patterns designed to complement the deep bass below.
+    // When bass is on root, piano fills with upper chord tones. When bass rests, piano anchors.
+    const PIANO_PATTERNS = {
+        // --- BLOCK CHORDS (pairs with deep root-only bass patterns)
+        'Block':       [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],  // Two chords per bar — classic lo-fi
+        'BlockSlow':   [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // One chord per bar — maximum space
+        'RhodesHit':   [1,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,1],  // Soulful laid-back Rhodes feel
+        'OffbeatChord':[0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],  // Backbeat — sits between bass hits
+        // --- COMPING (jazzy rhythmic hits — pairs with walking/groove bass)
+        'Comping':     [1,0,0,0, 0,0,1,0, 0,0,0,0, 0,1,0,0],  // Jazz comping — syncopated stabs
+        'NeoSoulComp': [0,0,1,0, 0,0,0,1, 0,0,0,0, 1,0,0,0],  // Neo-soul pocket — behind the beat
+        'Bounce':      [1,0,0,1, 0,0,0,0, 1,0,0,0, 0,0,1,0],  // Bouncy — hits lock with bass
+        'SoftStab':    [1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,0],  // Gentle 3-hit pattern
+        // --- ARPEGGIOS (melodic motion — pairs with sustained/sparse bass)
+        'Arpeggio':    [3,0,3,0, 3,0,3,0, 3,0,3,0, 3,0,3,0],  // 8th-note arpeggio over bass root
+        'SlowArp':     [3,0,0,0, 3,0,0,0, 3,0,0,0, 3,0,0,0],  // Quarter-note arpeggio — gentle
+        'SyncArp':     [3,0,0,3, 0,3,0,0, 3,0,0,3, 0,0,3,0],  // Syncopated — interweaves with bass
+        'RollingArp':  [3,0,0,0, 0,3,0,0, 0,0,3,0, 0,0,0,3],  // Cascading down — dreamy
+        // --- BROKEN CHORD (mix chord + single notes — most "lo-fi" feeling)
+        'Broken':      [1,0,0,3, 0,0,3,0, 1,0,0,0, 0,3,0,0],  // Chord, then melody notes respond
+        'DreamBroken': [1,0,0,0, 0,0,0,3, 0,0,0,0, 0,3,0,0],  // Very sparse — chord and echoes
+        'WaltzBroken': [1,0,0,0, 3,0,3,0, 0,0,0,0, 3,0,3,0],  // Waltz: chord then arp fill
+        'Sparse':      [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,1,0],  // Ultra minimal — two hits, max space
+    };
+    // --- LOFI ACCORDION PATTERNS. 0=rest, 1=full chord (sustained), 3=arpeggio note (16-step)
+    // Accordion plays held chords and gentle melodic fills — breathing, warm, lo-fi texture
+    const ACCORDION_PATTERNS = {
+        'Sustain':  [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // One long held chord per bar
+        'Gentle':   [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],  // Two gentle chords per bar
+        'Breath':   [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,1,0],  // Off-beat breathing feel
+        'Waltz':    [1,0,0,0, 0,3,0,0, 0,3,0,0, 0,0,0,0],  // Chord then gentle arp fill
+        'Arp':      [3,0,0,3, 0,0,3,0, 0,3,0,0, 3,0,0,0],  // Gentle rolling arpeggio
+        'Dreamy':   [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,3,0],  // Sparse with single note tail
+        'Float':    [0,0,1,0, 0,0,0,0, 0,0,0,0, 1,0,0,0],  // Floating off-beat pads
+        'Sparse':   [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],  // Ultra minimal — once per bar
+        'Swell':    [0,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,0],  // Late swell, atmospheric
+        'Duet':     [1,0,0,0, 0,0,3,0, 0,0,0,0, 0,3,0,0],  // Chord with melodic response
+        'Lullaby':  [1,0,0,0, 0,0,0,3, 0,0,1,0, 0,0,0,0],  // Soft rocking pattern
+        'Mist':     [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],  // Ghost-like single appearance
     };
     // --- LOFI HI-HAT PATTERNS. 0=rest, 1=closed hit, 2=ghost (soft), 3=open hat (16-step)
     const HIHAT_PATTERNS = {
@@ -722,69 +1038,97 @@
         [1, 1, 0, 1, 0, 2, 0], [0, 1, 3, 2, 1, 0], [2, 0, 0, 1, 2, 0], [0, 1, 2, 1, 0, 0, 1], [1, 2, 0, 1, 0, 1, 0]
     ];
 
-    // --- LOFI STYLES ONLY. BPM 55-92, swing, bit-crush, 7ths where noted.
+    // --- LOFI HIP-HOP STYLES. BPM 68-98, swing for groove, bit-crush for lo-fi color.
     const STYLES = {
-        'Chill Hop': { bpmRange: [78, 90], swing: 0.015, drumDensity: 0.6, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
-        'Classic': { bpmRange: [68, 78], swing: 0.01, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
-        'Sleepy': { bpmRange: [52, 64], swing: 0.005, drumDensity: 0.1, bitCrush: 8, hasLead: false, isGuitar: false, color: '#5b7c99' },
-        'Jazzy': { bpmRange: [70, 86], swing: 0.02, drumDensity: 0.5, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
-        'Minimal': { bpmRange: [58, 70], swing: 0.005, drumDensity: 0.2, bitCrush: 6, hasLead: false, isGuitar: false, color: '#6b7280' },
-        'Study': { bpmRange: [72, 82], swing: 0.008, drumDensity: 0.35, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
-        'Twilight': { bpmRange: [64, 76], swing: 0.01, drumDensity: 0.28, bitCrush: 5, hasLead: true, isGuitar: false, color: '#7c8ba3' },
-        'Rainy': { bpmRange: [62, 74], swing: 0.008, drumDensity: 0.3, bitCrush: 5, hasLead: true, isGuitar: false, color: '#6b8cae' },
-        'Vintage': { bpmRange: [70, 80], swing: 0.012, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#c9a959' },
-        'Neo-Soul': { bpmRange: [74, 88], swing: 0.02, drumDensity: 0.55, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
-        'Soft': { bpmRange: [64, 76], swing: 0.008, drumDensity: 0.28, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
-        'Warm': { bpmRange: [72, 84], swing: 0.01, drumDensity: 0.5, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
-        'Mellow': { bpmRange: [66, 78], swing: 0.012, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
-        'Cozy': { bpmRange: [60, 72], swing: 0.01, drumDensity: 0.32, bitCrush: 5, hasLead: true, isGuitar: false, color: '#8b7355' },
-        'Sunrise': { bpmRange: [70, 82], swing: 0.01, drumDensity: 0.35, bitCrush: 4, hasLead: true, isGuitar: false, color: '#f4a261' }
+        'Chill Hop': { bpmRange: [80, 92], swing: 0.02, drumDensity: 0.65, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
+        'Classic': { bpmRange: [72, 85], swing: 0.018, drumDensity: 0.5, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
+        'Sleepy': { bpmRange: [65, 75], swing: 0.012, drumDensity: 0.3, bitCrush: 6, hasLead: false, isGuitar: false, color: '#5b7c99' },
+        'Jazzy': { bpmRange: [75, 90], swing: 0.025, drumDensity: 0.55, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
+        'Minimal': { bpmRange: [70, 82], swing: 0.01, drumDensity: 0.35, bitCrush: 5, hasLead: false, isGuitar: false, color: '#6b7280' },
+        'Study': { bpmRange: [76, 88], swing: 0.015, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
+        'Twilight': { bpmRange: [72, 84], swing: 0.015, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#7c8ba3' },
+        'Rainy': { bpmRange: [70, 82], swing: 0.014, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#6b8cae' },
+        'Vintage': { bpmRange: [74, 86], swing: 0.02, drumDensity: 0.5, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c9a959' },
+        'Neo-Soul': { bpmRange: [78, 92], swing: 0.025, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
+        'Soft': { bpmRange: [70, 80], swing: 0.012, drumDensity: 0.35, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
+        'Warm': { bpmRange: [76, 90], swing: 0.018, drumDensity: 0.55, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
+        'Mellow': { bpmRange: [72, 84], swing: 0.016, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
+        'Cozy': { bpmRange: [68, 80], swing: 0.015, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#8b7355' },
+        'Sunrise': { bpmRange: [76, 88], swing: 0.016, drumDensity: 0.45, bitCrush: 3, hasLead: true, isGuitar: false, color: '#f4a261' }
     };
 
     // --- LOFI SOUND BANKS (10x variation). Keys, pad, bass, lead, effects, drums — hit tones only.
-    // Keys: warm sine/triangle only (no square — too harsh). Short sustain for rhythmic hip-hop chords.
+    // Keys: FM synthesis for piano-like tones — the LEAD instrument, must be clearly audible.
+    // Piano has its own reverb→compressor path (bypasses masterFilter lowpass that was killing it).
+    // Sustain 0.2-0.4 so notes ring clearly. Volume -6 to -9: piano sits ON TOP of the mix.
     const KEY_PATCHES = [
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.28, release: 0.7 }, volume: -24, detune: 0 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.12, decay: 0.3, sustain: 0.3, release: 0.9 }, volume: -23, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.22, release: 0.6 }, volume: -25, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.22, sustain: 0.24, release: 0.7 }, volume: -25, detune: 0 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.15, decay: 0.35, sustain: 0.3, release: 1.0 }, volume: -24, detune: 2 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.02, decay: 0.18, sustain: 0.18, release: 0.5 }, volume: -23, detune: -1 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.2, decay: 0.4, sustain: 0.32, release: 1.2 }, volume: -25, detune: 0 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.28, sustain: 0.25, release: 0.8 }, volume: -26, detune: 1 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.1, decay: 0.32, sustain: 0.28, release: 0.9 }, volume: -23, detune: 0 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.18, decay: 0.38, sustain: 0.3, release: 1.0 }, volume: -24, detune: -2 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.18, release: 0.6 }, volume: -25, detune: 0 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 0.14, decay: 0.3, sustain: 0.26, release: 0.9 }, volume: -25, detune: 0 }
+        // Bright upright piano — punchy attack, rich harmonics, ringing sustain
+        { harmonicity: 3.5, modulationIndex: 5, envelope: { attack: 0.005, decay: 0.6, sustain: 0.25, release: 1.2 }, modulationEnvelope: { attack: 0.002, decay: 0.3, sustain: 0, release: 0.4 }, volume: -7 },
+        // Warm felt piano — softer attack, mellow body, long ring
+        { harmonicity: 2, modulationIndex: 3, envelope: { attack: 0.01, decay: 0.8, sustain: 0.3, release: 1.6 }, modulationEnvelope: { attack: 0.003, decay: 0.4, sustain: 0, release: 0.6 }, volume: -6 },
+        // Dusty Rhodes — bell-like FM tone, singing sustain
+        { harmonicity: 4, modulationIndex: 6, envelope: { attack: 0.003, decay: 0.5, sustain: 0.22, release: 1.0 }, modulationEnvelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.3 }, volume: -7 },
+        // Tape-saturated piano — slightly crunchy, moderate sustain
+        { harmonicity: 3, modulationIndex: 4.5, envelope: { attack: 0.005, decay: 0.5, sustain: 0.2, release: 0.9 }, modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.35 }, volume: -6 },
+        // Dreamy keys — softer modulation, longest sustain for reverb tails
+        { harmonicity: 2.5, modulationIndex: 2.5, envelope: { attack: 0.012, decay: 0.9, sustain: 0.4, release: 1.8 }, modulationEnvelope: { attack: 0.005, decay: 0.5, sustain: 0.02, release: 0.7 }, volume: -8 },
+        // Punchy lo-fi — very fast attack, bright, snappy
+        { harmonicity: 3.5, modulationIndex: 5.5, envelope: { attack: 0.002, decay: 0.4, sustain: 0.2, release: 0.8 }, modulationEnvelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.25 }, volume: -6 },
+        // Vintage Wurlitzer — medium harmonicity, warm body, singing
+        { harmonicity: 2, modulationIndex: 3.5, envelope: { attack: 0.008, decay: 0.6, sustain: 0.28, release: 1.2 }, modulationEnvelope: { attack: 0.003, decay: 0.35, sustain: 0, release: 0.5 }, volume: -7 },
+        // Glass piano — high harmonicity for shimmer, clear
+        { harmonicity: 5, modulationIndex: 4, envelope: { attack: 0.003, decay: 0.5, sustain: 0.22, release: 1.0 }, modulationEnvelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.2 }, volume: -8 },
+        // Mellow upright — round tone, gentle attack, warm sustain
+        { harmonicity: 2.5, modulationIndex: 3, envelope: { attack: 0.01, decay: 0.7, sustain: 0.3, release: 1.4 }, modulationEnvelope: { attack: 0.004, decay: 0.4, sustain: 0, release: 0.55 }, volume: -7 },
+        // Bright studio piano — clear articulation, present
+        { harmonicity: 3, modulationIndex: 5, envelope: { attack: 0.004, decay: 0.6, sustain: 0.25, release: 1.1 }, modulationEnvelope: { attack: 0.002, decay: 0.22, sustain: 0, release: 0.35 }, volume: -6 },
+        // Lo-fi toy piano — quirky character, moderate ring
+        { harmonicity: 6, modulationIndex: 3, envelope: { attack: 0.002, decay: 0.4, sustain: 0.18, release: 0.7 }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.15 }, volume: -9 },
+        // Smooth jazz keys — warm, long sustain, singing
+        { harmonicity: 2, modulationIndex: 2, envelope: { attack: 0.015, decay: 0.9, sustain: 0.35, release: 1.6 }, modulationEnvelope: { attack: 0.005, decay: 0.5, sustain: 0.03, release: 0.7 }, volume: -7 }
     ];
-    // Pads: quiet background warmth only (no square, low sustain, short release — NOT a drone)
+    // Pads: very subtle background warmth (breakdown only). Low volume, short sustain — NOT a drone.
     const PAD_PATCHES = [
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.8, sustain: 0.35, release: 1.6 }, volume: -29 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.7, sustain: 0.3, release: 1.4 }, volume: -28 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.5, decay: 1.0, sustain: 0.38, release: 1.8 }, volume: -30 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.1, decay: 0.8, sustain: 0.32, release: 1.5 }, volume: -29 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.6, decay: 0.6, sustain: 0.25, release: 1.3 }, volume: -28 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 1.4, decay: 0.9, sustain: 0.36, release: 1.7 }, volume: -30 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.85, sustain: 0.3, release: 1.5 }, volume: -31 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 1.0, decay: 0.7, sustain: 0.28, release: 1.3 }, volume: -28 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 1.6, decay: 1.0, sustain: 0.38, release: 2.0 }, volume: -29 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.7, decay: 0.5, sustain: 0.22, release: 1.1 }, volume: -27 },
-        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.3, decay: 0.8, sustain: 0.32, release: 1.6 }, volume: -29 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.7, sustain: 0.28, release: 1.5 }, volume: -28 }
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.12, release: 1.0 }, volume: -36 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.5, sustain: 0.1, release: 0.9 }, volume: -35 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.5, decay: 0.7, sustain: 0.14, release: 1.1 }, volume: -37 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.1, decay: 0.6, sustain: 0.1, release: 1.0 }, volume: -36 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.6, decay: 0.4, sustain: 0.08, release: 0.8 }, volume: -35 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 1.4, decay: 0.7, sustain: 0.12, release: 1.1 }, volume: -37 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.1, release: 0.9 }, volume: -38 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 1.0, decay: 0.5, sustain: 0.08, release: 0.8 }, volume: -35 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 1.6, decay: 0.7, sustain: 0.14, release: 1.2 }, volume: -36 },
+        { oscillator: { type: 'sine' }, envelope: { attack: 0.7, decay: 0.4, sustain: 0.06, release: 0.7 }, volume: -34 },
+        { oscillator: { type: 'fatsine' }, envelope: { attack: 1.3, decay: 0.6, sustain: 0.1, release: 1.0 }, volume: -36 },
+        { oscillator: { type: 'triangle' }, envelope: { attack: 0.9, decay: 0.5, sustain: 0.08, release: 0.9 }, volume: -35 }
     ];
+    // Bass: Hip-hop sub — punchy attack with deep sustain. Sine FM through 500Hz lowpass.
+    // Faster attacks + higher modulationIndex = more presence and punch for hip-hop groove.
     const BASS_PATCHES = [
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.92, release: 1 }, volume: -12 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.2, sustain: 0.88, release: 1.1 }, volume: -14 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.02, decay: 0.15, sustain: 0.95, release: 0.9 }, volume: -11 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.22, sustain: 0.85, release: 1.2 }, volume: -13 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.08, decay: 0.25, sustain: 0.82, release: 1.15 }, volume: -13 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.03, decay: 0.2, sustain: 0.9, release: 1.05 }, volume: -12 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.07, decay: 0.28, sustain: 0.8, release: 1.25 }, volume: -14 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.04, decay: 0.18, sustain: 0.88, release: 0.95 }, volume: -12 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.06, decay: 0.24, sustain: 0.83, release: 1.1 }, volume: -15 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.19, sustain: 0.9, release: 1 }, volume: -13 },
-        { oscillator: { type: 'triangle' }, envelope: { attack: 0.03, decay: 0.16, sustain: 0.92, release: 0.88 }, volume: -12 },
-        { oscillator: { type: 'sine' }, envelope: { attack: 0.09, decay: 0.3, sustain: 0.78, release: 1.3 }, volume: -14 }
+        // 808 punch — fast attack, long sustain, classic hip-hop
+        { harmonicity: 1, modulationIndex: 1.2, envelope: { attack: 0.005, decay: 0.35, sustain: 0.75, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 }, volume: -8 },
+        // Boom-bap sub — round but punchy
+        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.3, sustain: 0.7, release: 0.7 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.05, release: 0.25 }, volume: -7 },
+        // Deep 808 tail — long decay for sustained pressure
+        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.6, sustain: 0.8, release: 1.2 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.06, release: 0.35 }, volume: -8 },
+        // Tight punch — shortest decay, locks with kick
+        { harmonicity: 1, modulationIndex: 1.8, envelope: { attack: 0.002, decay: 0.25, sustain: 0.5, release: 0.5 }, modulationEnvelope: { attack: 0.001, decay: 0.12, sustain: 0, release: 0.2 }, volume: -7 },
+        // Moog groove — warm with modulation presence
+        { harmonicity: 1, modulationIndex: 2, envelope: { attack: 0.008, decay: 0.35, sustain: 0.7, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.3 }, volume: -8 },
+        // Rubber bounce — funky, bouncy hip-hop feel
+        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.005, decay: 0.3, sustain: 0.65, release: 0.6 }, modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.05, release: 0.25 }, volume: -8 },
+        // Lo-fi tape bass — saturated warmth with attack
+        { harmonicity: 1, modulationIndex: 2.2, envelope: { attack: 0.004, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.003, decay: 0.18, sustain: 0.1, release: 0.3 }, volume: -8 },
+        // Dilla pocket — medium everything, groovy
+        { harmonicity: 0.5, modulationIndex: 1.2, envelope: { attack: 0.008, decay: 0.4, sustain: 0.75, release: 0.9 }, modulationEnvelope: { attack: 0.005, decay: 0.22, sustain: 0.08, release: 0.35 }, volume: -8 },
+        // Hard knock — tight, aggressive attack
+        { harmonicity: 1.5, modulationIndex: 2.5, envelope: { attack: 0.002, decay: 0.2, sustain: 0.45, release: 0.4 }, modulationEnvelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.15 }, volume: -7 },
+        // Round hip-hop — clean, present
+        { harmonicity: 1, modulationIndex: 1, envelope: { attack: 0.006, decay: 0.35, sustain: 0.7, release: 0.8 }, modulationEnvelope: { attack: 0.004, decay: 0.2, sustain: 0.06, release: 0.3 }, volume: -8 },
+        // Fat sub — wide, sustained, fills the low end
+        { harmonicity: 0.5, modulationIndex: 0.8, envelope: { attack: 0.005, decay: 0.5, sustain: 0.8, release: 1.0 }, modulationEnvelope: { attack: 0.003, decay: 0.25, sustain: 0.08, release: 0.35 }, volume: -8 },
+        // Punchy synth bass — snappy, defined
+        { harmonicity: 1, modulationIndex: 1.5, envelope: { attack: 0.003, decay: 0.28, sustain: 0.6, release: 0.6 }, modulationEnvelope: { attack: 0.002, decay: 0.15, sustain: 0.04, release: 0.25 }, volume: -7 }
     ];
     // Lead: very quiet background accent (no square — sine/triangle only, well behind the beat)
     const LEAD_PATCHES = [
@@ -801,25 +1145,61 @@
         { oscillator: { type: 'triangle' }, envelope: { attack: 0.06, decay: 0.21, sustain: 0.14, release: 0.75 }, volume: -32 },
         { oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }
     ];
-    // Effects: gentle and warm. Tremolo/vibrato kept very subtle to avoid robotic wobble.
+    // Accordion: AM synthesis for reed-like warmth. Square partials = reed buzzing.
+    // Slow attack mimics bellows opening. Routed through tremolo for characteristic wavering.
+    const ACCORDION_PATCHES = [
+        // Warm musette — gentle reed character, slow breathe
+        { harmonicity: 2, oscillator: { type: 'square8' }, envelope: { attack: 0.15, decay: 0.5, sustain: 0.55, release: 1.4 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.1, decay: 0.3, sustain: 0.25, release: 0.6 }, volume: -24 },
+        // Soft bandoneon — darker, more mellow
+        { harmonicity: 1.5, oscillator: { type: 'square8' }, envelope: { attack: 0.2, decay: 0.6, sustain: 0.5, release: 1.6 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.12, decay: 0.35, sustain: 0.2, release: 0.7 }, volume: -25 },
+        // Bright concertina — slightly more presence
+        { harmonicity: 2.5, oscillator: { type: 'square16' }, envelope: { attack: 0.1, decay: 0.45, sustain: 0.6, release: 1.2 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.08, decay: 0.25, sustain: 0.3, release: 0.5 }, volume: -23 },
+        // Dreamy melodica — airy, breathy
+        { harmonicity: 1, oscillator: { type: 'square8' }, envelope: { attack: 0.25, decay: 0.7, sustain: 0.45, release: 1.8 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.15, decay: 0.4, sustain: 0.15, release: 0.8 }, volume: -26 },
+        // Lo-fi accordion — with subtle grit
+        { harmonicity: 2, oscillator: { type: 'square4' }, envelope: { attack: 0.12, decay: 0.5, sustain: 0.5, release: 1.3 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.08, decay: 0.3, sustain: 0.2, release: 0.55 }, volume: -24 },
+        // Ethereal harmonium — long sustain, very gentle
+        { harmonicity: 1.5, oscillator: { type: 'square16' }, envelope: { attack: 0.3, decay: 0.8, sustain: 0.6, release: 2.0 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.2, decay: 0.5, sustain: 0.2, release: 0.9 }, volume: -27 },
+        // Café accordion — warm, nostalgic
+        { harmonicity: 2, oscillator: { type: 'square8' }, envelope: { attack: 0.14, decay: 0.55, sustain: 0.52, release: 1.5 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.1, decay: 0.32, sustain: 0.22, release: 0.6 }, volume: -25 },
+        // Tango reed — expressive, slightly brighter
+        { harmonicity: 2.5, oscillator: { type: 'square8' }, envelope: { attack: 0.1, decay: 0.45, sustain: 0.58, release: 1.2 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.06, decay: 0.28, sustain: 0.25, release: 0.5 }, volume: -24 },
+        // Whisper accordion — very soft, background texture
+        { harmonicity: 1, oscillator: { type: 'square16' }, envelope: { attack: 0.35, decay: 0.8, sustain: 0.4, release: 2.2 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.2, decay: 0.5, sustain: 0.12, release: 1.0 }, volume: -28 },
+        // Vintage pump organ — church-like warmth
+        { harmonicity: 1.5, oscillator: { type: 'square4' }, envelope: { attack: 0.2, decay: 0.6, sustain: 0.55, release: 1.7 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.12, decay: 0.4, sustain: 0.18, release: 0.7 }, volume: -25 },
+        // Gentle reed organ — mellow, sustained
+        { harmonicity: 2, oscillator: { type: 'square8' }, envelope: { attack: 0.18, decay: 0.55, sustain: 0.5, release: 1.5 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.1, decay: 0.35, sustain: 0.2, release: 0.65 }, volume: -25 },
+        // Soft celeste accordion — shimmering, light
+        { harmonicity: 3, oscillator: { type: 'square16' }, envelope: { attack: 0.2, decay: 0.6, sustain: 0.48, release: 1.6 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.12, decay: 0.35, sustain: 0.25, release: 0.7 }, volume: -26 }
+    ];
+
+    // Effects: gentle and warm. Filter ranges raised for piano clarity. Tremolo/vibrato kept subtle.
     const EFFECT_PRESETS = [
-        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 550, filterMax: 1500, tremoloWet: 0.04, vibratoWet: 0.02 },
-        { reverbDecay: 0.32, delayWet: 0.14, chorusWet: 0.22, filterMin: 580, filterMax: 1600, tremoloWet: 0.06, vibratoWet: 0.025 },
-        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 500, filterMax: 1300, tremoloWet: 0.02, vibratoWet: 0.015 },
-        { reverbDecay: 0.36, delayWet: 0.16, chorusWet: 0.24, filterMin: 600, filterMax: 1700, tremoloWet: 0.08, vibratoWet: 0.03 },
-        { reverbDecay: 0.25, delayWet: 0.08, chorusWet: 0.16, filterMin: 520, filterMax: 1400, tremoloWet: 0.03, vibratoWet: 0.02 },
-        { reverbDecay: 0.34, delayWet: 0.12, chorusWet: 0.20, filterMin: 620, filterMax: 1750, tremoloWet: 0.06, vibratoWet: 0.025 },
-        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 540, filterMax: 1500, tremoloWet: 0.04, vibratoWet: 0.02 },
-        { reverbDecay: 0.20, delayWet: 0.05, chorusWet: 0.12, filterMin: 480, filterMax: 1200, tremoloWet: 0.02, vibratoWet: 0.01 },
-        { reverbDecay: 0.38, delayWet: 0.18, chorusWet: 0.26, filterMin: 640, filterMax: 1800, tremoloWet: 0.08, vibratoWet: 0.03 },
-        { reverbDecay: 0.24, delayWet: 0.08, chorusWet: 0.16, filterMin: 510, filterMax: 1350, tremoloWet: 0.03, vibratoWet: 0.02 },
-        { reverbDecay: 0.30, delayWet: 0.10, chorusWet: 0.18, filterMin: 560, filterMax: 1550, tremoloWet: 0.05, vibratoWet: 0.02 },
-        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 490, filterMax: 1250, tremoloWet: 0.02, vibratoWet: 0.015 }
+        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 1800, filterMax: 5500, tremoloWet: 0.04, vibratoWet: 0.02 },
+        { reverbDecay: 0.32, delayWet: 0.14, chorusWet: 0.22, filterMin: 2000, filterMax: 6000, tremoloWet: 0.06, vibratoWet: 0.025 },
+        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 1500, filterMax: 4500, tremoloWet: 0.02, vibratoWet: 0.015 },
+        { reverbDecay: 0.36, delayWet: 0.16, chorusWet: 0.24, filterMin: 2200, filterMax: 6500, tremoloWet: 0.08, vibratoWet: 0.03 },
+        { reverbDecay: 0.25, delayWet: 0.08, chorusWet: 0.16, filterMin: 1600, filterMax: 5000, tremoloWet: 0.03, vibratoWet: 0.02 },
+        { reverbDecay: 0.34, delayWet: 0.12, chorusWet: 0.20, filterMin: 2100, filterMax: 6200, tremoloWet: 0.06, vibratoWet: 0.025 },
+        { reverbDecay: 0.28, delayWet: 0.10, chorusWet: 0.18, filterMin: 1700, filterMax: 5500, tremoloWet: 0.04, vibratoWet: 0.02 },
+        { reverbDecay: 0.20, delayWet: 0.05, chorusWet: 0.12, filterMin: 1400, filterMax: 4000, tremoloWet: 0.02, vibratoWet: 0.01 },
+        { reverbDecay: 0.38, delayWet: 0.18, chorusWet: 0.26, filterMin: 2400, filterMax: 7000, tremoloWet: 0.08, vibratoWet: 0.03 },
+        { reverbDecay: 0.24, delayWet: 0.08, chorusWet: 0.16, filterMin: 1600, filterMax: 4800, tremoloWet: 0.03, vibratoWet: 0.02 },
+        { reverbDecay: 0.30, delayWet: 0.10, chorusWet: 0.18, filterMin: 1900, filterMax: 5800, tremoloWet: 0.05, vibratoWet: 0.02 },
+        { reverbDecay: 0.22, delayWet: 0.06, chorusWet: 0.14, filterMin: 1500, filterMax: 4500, tremoloWet: 0.02, vibratoWet: 0.015 }
     ];
     const DRUM_TONES = [
-        { kickDecay: 0.35, snareDecay: 0.16, hihatFreq: 120, hihatDecay: 0.035 },
-        { kickDecay: 0.34, snareDecay: 0.15, hihatFreq: 125, hihatDecay: 0.036 },
-        { kickDecay: 0.36, snareDecay: 0.17, hihatFreq: 130, hihatDecay: 0.038 }
+        // Boom-bap punchy — tight kick, snappy snare, bright hat
+        { kickDecay: 0.25, snareDecay: 0.12, hihatFreq: 160, hihatDecay: 0.03 },
+        // Dilla pocket — rounder kick, slightly longer snare
+        { kickDecay: 0.3, snareDecay: 0.14, hihatFreq: 150, hihatDecay: 0.035 },
+        // Classic lo-fi — medium punch, warm hat
+        { kickDecay: 0.28, snareDecay: 0.13, hihatFreq: 140, hihatDecay: 0.032 },
+        // Hard knock — short kick, tight snare, crisp hat
+        { kickDecay: 0.2, snareDecay: 0.1, hihatFreq: 170, hihatDecay: 0.028 },
+        // Dusty groove — looser feel, medium everything
+        { kickDecay: 0.32, snareDecay: 0.15, hihatFreq: 145, hihatDecay: 0.036 }
     ];
 
     const state = {
@@ -844,6 +1224,8 @@
         drumPattern: [],
         bassPattern: [],   // 0=rest, 1=root, 2=fifth, 3=root up
         hihatPattern: [],  // 0=rest, 1=closed, 2=ghost, 3=open
+        pianoPattern: [],  // 0=rest, 1=full chord, 2=lighter voicing, 3=arpeggio note
+        accordionPattern: [], // 0=rest, 1=full chord (sustained), 3=arpeggio note
         useSeventh: false, // 7th chords for Jazzy/Funk
         lastChordVoicing: null,
         activeLeadNote: null,
@@ -852,13 +1234,144 @@
 
     // Nodes
     let radioGroup, stopClick; 
-    let keys, pad, bass, lead, kick, snare, hihat, foley;
+    let keys, pad, bass, lead, accordion, kick, snare, hihat, foley;
     let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter;
     let vinylNoise, rainNoise, windNoise, filterLFO, padVolumeLFO, analyser;
     let autoPanner, tremolo, vibrato;
     let pageVisible = true;
     let keepAliveAudio = null;
     let wakeLock = null;
+
+    // ─── SPOTIFY CANVAS ─── Looping video background (mobile only)
+    let canvasTimer = null;
+    let canvasVisible = false;
+    const CANVAS_DELAY_MS = 10000; // 10 seconds before video appears
+
+    function startCanvasTimer() {
+        const video = document.getElementById('canvas-video');
+        if (!video || !video.src || video.src === window.location.href) return;
+        if (window.innerWidth > 900) return; // Desktop — skip
+        if (canvasVisible) return; // Already showing
+        if (canvasDismissed) return; // User dismissed — don't auto-show until next track
+        if (canvasTimer) clearTimeout(canvasTimer);
+        canvasTimer = setTimeout(showCanvas, CANVAS_DELAY_MS);
+    }
+
+    let canvasDismissed = false; // User manually dismissed canvas
+
+    function showCanvas() {
+        const container = document.getElementById('canvas-container');
+        const video = document.getElementById('canvas-video');
+        const overlay = document.getElementById('canvas-overlay');
+        const tapZone = document.getElementById('canvas-tap-zone');
+        if (!container || !video || !video.src || video.src === window.location.href) return;
+        if (window.innerWidth > 900) return; // Desktop guard
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        container.classList.add('visible');
+        document.body.classList.add('canvas-active');
+        if (tapZone) tapZone.style.pointerEvents = 'auto';
+        // Scroll main-stage to top so user sees the video first
+        const stage = document.querySelector('.main-stage');
+        if (stage) stage.scrollTop = 0;
+        // Show floating track overlay
+        if (overlay) {
+            overlay.style.opacity = '';
+            overlay.style.transform = '';
+            syncCanvasOverlay();
+            setTimeout(() => overlay.classList.add('visible'), 100);
+        }
+        canvasVisible = true;
+        canvasDismissed = false;
+    }
+
+    function hideCanvas(userDismissed) {
+        const container = document.getElementById('canvas-container');
+        const video = document.getElementById('canvas-video');
+        const overlay = document.getElementById('canvas-overlay');
+        const tapZone = document.getElementById('canvas-tap-zone');
+        if (container) container.classList.remove('visible');
+        if (overlay) overlay.classList.remove('visible');
+        document.body.classList.remove('canvas-active');
+        if (video) video.pause();
+        if (canvasTimer) { clearTimeout(canvasTimer); canvasTimer = null; }
+        canvasVisible = false;
+        // Keep tap zone active if user dismissed (so they can tap to bring it back)
+        if (tapZone) tapZone.style.pointerEvents = userDismissed ? 'auto' : 'none';
+        if (userDismissed) canvasDismissed = true;
+    }
+
+    /** Toggle canvas on/off when user taps the top half of the screen */
+    function setupCanvasTapToggle() {
+        const tapZone = document.getElementById('canvas-tap-zone');
+        if (!tapZone) return;
+        tapZone.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (canvasVisible) {
+                // Dismiss — fade out video, fade in normal UI
+                hideCanvas(true);
+            } else if (canvasDismissed && state.isPlaying) {
+                // Bring it back — user taps top half again
+                showCanvas();
+            }
+        });
+    }
+
+    /** Push current track info into the canvas overlay */
+    function syncCanvasOverlay() {
+        const title = document.getElementById('playlist-title');
+        const artist = document.getElementById('playlist-artist');
+        const ct = document.getElementById('canvas-title');
+        const ca = document.getElementById('canvas-artist');
+        const csb = document.getElementById('canvas-style-badge');
+        const cmb = document.getElementById('canvas-mood-badge');
+        if (ct && title) ct.innerText = title.innerText;
+        if (ca && artist) ca.innerText = artist.innerText;
+        if (csb) csb.innerText = state.style || '';
+        if (cmb) cmb.innerText = state.mood || '';
+    }
+
+    /** Scroll-aware canvas overlay: fades out as user scrolls to queue */
+    function setupCanvasScroll() {
+        const stage = document.querySelector('.main-stage');
+        if (!stage) return;
+        let ticking = false;
+        stage.addEventListener('scroll', () => {
+            if (!ticking) {
+                ticking = true;
+                requestAnimationFrame(() => {
+                    handleCanvasScroll(stage);
+                    ticking = false;
+                });
+            }
+        }, { passive: true });
+    }
+
+    function handleCanvasScroll(stage) {
+        if (!canvasVisible) return;
+        const overlay = document.getElementById('canvas-overlay');
+        if (!overlay) return;
+        const scrollY = stage.scrollTop;
+        const fadeDistance = 180; // px to fully fade out
+        const progress = Math.min(1, scrollY / fadeDistance);
+        // Fade out overlay as user scrolls
+        overlay.style.opacity = 1 - progress;
+        overlay.style.transform = `translateY(${-progress * 30}px)`;
+    }
+
+    // Initialize canvas interactions once DOM is ready
+    (function initCanvasInteractions() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setupCanvasScroll();
+                setupCanvasTapToggle();
+            });
+        } else {
+            setupCanvasScroll();
+            setupCanvasTapToggle();
+        }
+    })();
 
     /**
      * Create a 1-second silent WAV blob.
@@ -902,8 +1415,8 @@
     function resumeAllAudio() {
         if (!state.isPlaying) return;
         // Resume AudioContext
-        const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
-        if (ctx && ctx.state === 'suspended') {
+            const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
+            if (ctx && ctx.state === 'suspended') {
             ctx.resume().then(() => {
                 Tone.Transport.start();
                 try { vinylNoise.start(); } catch(e) {}
@@ -1016,8 +1529,8 @@
 
         limiter = new Tone.Limiter(-1).connect(radioGroup); 
         compressor = new Tone.Compressor(-12, 3).connect(limiter);
-        masterFilter = new Tone.Filter(1000, "lowpass").connect(compressor);
-        filterLFO = new Tone.LFO(0.05, 400, 1200).start();
+        masterFilter = new Tone.Filter(3000, "lowpass").connect(compressor);
+        filterLFO = new Tone.LFO(0.05, 1500, 6000).start(); // Wide range — lets piano harmonics breathe
         filterLFO.connect(masterFilter.frequency);
         
         reverb = new Tone.JCReverb(0.3).connect(masterFilter);
@@ -1029,17 +1542,52 @@
         tremolo = new Tone.Tremolo(1.5, 0.15).start().connect(bitCrusher); // Slow, subtle amplitude shimmer
         vibrato = new Tone.Vibrato(2, 0.03).connect(autoPanner); // Gentle pitch warmth, not wobble
 
-        keys = new Tone.PolySynth(Tone.Synth, { volume: -24, oscillator: { type: "fatsine" }, envelope: { attack: 0.1, decay: 0.3, sustain: 0.28, release: 0.8 } }).connect(tremolo);
-        pad = new Tone.PolySynth(Tone.Synth, { volume: -28, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.8, sustain: 0.35, release: 1.6 } }).connect(reverb);
-        padVolumeLFO = new Tone.LFO(0.06, -34, -26).start(); // Pad stays quiet — background warmth only
+        // Piano: THE LEAD INSTRUMENT — gets its OWN dedicated reverb + compressor path.
+        // CRITICAL: piano BYPASSES masterFilter (lowpass LFO sweeps to 1200Hz and kills piano brightness).
+        // Piano goes: keys → pianoReverb → compressor → limiter → radioGroup → destination
+        const pianoReverb = new Tone.JCReverb(0.25).connect(compressor);
+        keys = new Tone.PolySynth(Tone.FMSynth, {
+            volume: -8,
+            harmonicity: 3,
+            modulationIndex: 4,
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.005, decay: 0.6, sustain: 0.25, release: 1.2 },
+            modulation: { type: "sine" },
+            modulationEnvelope: { attack: 0.002, decay: 0.25, sustain: 0, release: 0.4 }
+        }).connect(pianoReverb);
+        // Pad: very quiet background only — NOT a drone, just occasional warmth
+        pad = new Tone.PolySynth(Tone.Synth, { volume: -34, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.15, release: 1.0 } }).connect(reverb);
+        padVolumeLFO = new Tone.LFO(0.06, -40, -32).start(); // Pad very quiet — subtle background only
         padVolumeLFO.connect(pad.volume);
 
-        bass = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.9, release: 1 }, volume: -12 }).connect(compressor); 
+        // Bass: Deep sub with punch — sine FM through lowpass for warmth + attack presence.
+        // Filter at 500Hz lets the attack transient through for hip-hop thump.
+        const bassFilter = new Tone.Filter(500, "lowpass", -12).connect(compressor);
+        bass = new Tone.FMSynth({
+            harmonicity: 1,
+            modulationIndex: 1.2,
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.005, decay: 0.35, sustain: 0.75, release: 0.8 },
+            modulation: { type: "sine" },
+            modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 },
+            volume: -8
+        }).connect(bassFilter); 
         lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }).connect(vibrato); 
 
-        kick = new Tone.MembraneSynth({ volume: -10 }).connect(compressor);
-        snare = new Tone.NoiseSynth({ volume: -12, envelope: { decay: 0.15 } }).connect(masterFilter); 
-        hihat = new Tone.MetalSynth({ volume: -24, frequency: 140, envelope: { decay: 0.04 } }).connect(reverb);
+        // Accordion: AM synthesis for reed-like lo-fi warmth
+        // Routed through tremolo for natural wavering, then reverb for space
+        accordion = new Tone.PolySynth(Tone.AMSynth, {
+            volume: -24,
+            harmonicity: 2,
+            oscillator: { type: "square8" },
+            envelope: { attack: 0.15, decay: 0.5, sustain: 0.55, release: 1.4 },
+            modulation: { type: "sine" },
+            modulationEnvelope: { attack: 0.1, decay: 0.3, sustain: 0.25, release: 0.6 }
+        }).connect(tremolo);
+
+        kick = new Tone.MembraneSynth({ volume: -6, pitchDecay: 0.05, octaves: 6 }).connect(compressor);
+        snare = new Tone.NoiseSynth({ volume: -8, envelope: { attack: 0.001, decay: 0.13, sustain: 0 } }).connect(masterFilter); 
+        hihat = new Tone.MetalSynth({ volume: -18, frequency: 150, envelope: { attack: 0.001, decay: 0.04 } }).connect(reverb);
         
         // Foley Layer (Bird chirps, tape clicks etc.)
         foley = new Tone.Player("https://tonejs.github.io/audio/berklee/gong_1.mp3").connect(reverb); // Placeholder URL, in real app use generated noise bursts
@@ -1049,7 +1597,7 @@
         const noiseGain = new Tone.Gain(1).connect(radioGroup);
         vinylNoise = new Tone.Noise("brown").start(); 
         vinylNoise.connect(new Tone.Filter(500, "highpass").connect(noiseGain));
-        vinylNoise.volume.value = -45; 
+        vinylNoise.volume.value = -52; // Subtle crackle — sits behind the piano, not on top
         
         rainNoise = new Tone.Noise("pink").start(); 
         rainNoise.connect(new Tone.AutoFilter("0.1hz").connect(noiseGain));
@@ -1089,12 +1637,24 @@
         setInterval(updateAudioLogic, 1000); 
         setInterval(updateUIProgress, 200); 
         updatePlayButtonUI(true);
+        
+        // Start canvas video timer (if a video URL has been set)
+        startCanvasTimer();
     }
 
-    // Mix time-based pointer into a more varied seed so consecutive tracks don't sound alike
+    // Mix time-based pointer into a well-distributed seed using 32-bit safe arithmetic.
+    // Previous version overflowed float64 precision (p*2654435761 for p~1.7e12 > 2^53),
+    // causing consecutive tracks to get similar/identical seeds.
     function diversifySeed(pointer) {
         const p = Math.floor(pointer);
-        return ((p * 2654435761) >>> 0) + (p % 86400000);
+        // Split into two 32-bit halves to avoid float overflow
+        const lo = p % 4294967296;        // lower 32 bits (exact — well within 2^53)
+        const hi = Math.floor(p / 4294967296); // upper bits
+        // Mix both halves with splitmix32 hash for excellent distribution
+        let h = (lo ^ Math.imul(hi, 0x9e3779b9)) | 0;
+        h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+        h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+        return (h ^ (h >>> 16)) >>> 0;
     }
 
     // --- ENGINE ---
@@ -1130,6 +1690,7 @@
             radioGroup.gain.rampTo(0, 4); 
             if(filterLFO) { filterLFO.max = 200; filterLFO.frequency.rampTo(0.1, 4); }
             fadeUIText(false);
+            hideCanvas(); // Fade out canvas during transition
         }
 
         if (timeRemaining <= 0) {
@@ -1139,11 +1700,14 @@
             state.trackDuration = nextTrack.duration;
             
             generateNewTrack(state.currentSeed);
+            startSequencer(); // Restart sequencer with new seed — resets step counter & seqRNG
             updateQueueUI();
             
             radioGroup.gain.rampTo(1, 4);
+            if(filterLFO) { filterLFO.frequency.rampTo(0.05, 2); } // Restore LFO speed after transition
             fadeUIText(true);
             isTransitioning = false;
+            startCanvasTimer(); // Restart 30s timer for new track
         }
     }
 
@@ -1173,8 +1737,9 @@
         state.progression = generateProgression(state.mode);
         
         let bpm = config.bpmRange[0] + Math.floor(currentRNG() * (config.bpmRange[1] - config.bpmRange[0]));
-        if (state.mood === 'Uplifting' || state.mood === 'Groovy' || state.mood === 'Dreamy') bpm += 3;
-        state.bpm = Math.max(50, Math.min(110, bpm));
+        if (state.mood === 'Uplifting' || state.mood === 'Groovy') bpm += 4;
+        if (state.mood === 'Dreamy') bpm -= 1;
+        state.bpm = Math.max(65, Math.min(98, bpm)); // Lo-fi hip-hop sweet spot: 65-98 BPM
         
         Tone.Transport.bpm.value = state.bpm; 
 
@@ -1204,6 +1769,16 @@
         const hhKeys = Object.keys(HIHAT_PATTERNS);
         const hhKey = hhKeys[Math.floor(currentRNG() * hhKeys.length)];
         state.hihatPattern = [...HIHAT_PATTERNS[hhKey]];
+
+        // 5. Piano: rhythmic pattern (comping, arpeggios, broken chords)
+        const pianoKeys = Object.keys(PIANO_PATTERNS);
+        const pianoKey = pianoKeys[Math.floor(currentRNG() * pianoKeys.length)];
+        state.pianoPattern = [...PIANO_PATTERNS[pianoKey]];
+
+        // 6. Accordion: breathing sustained chords and gentle fills
+        const accKeys = Object.keys(ACCORDION_PATTERNS);
+        const accKey = accKeys[Math.floor(currentRNG() * accKeys.length)];
+        state.accordionPattern = [...ACCORDION_PATTERNS[accKey]];
         
         state.useSeventh = (state.style === 'Jazzy' || state.style === 'Neo-Soul' || state.style === 'Vintage' || state.style === 'Chill Hop');
         state.lastChordVoicing = null;
@@ -1213,12 +1788,14 @@
         const padIdx = Math.floor(currentRNG() * PAD_PATCHES.length);
         const bassIdx = Math.floor(currentRNG() * BASS_PATCHES.length);
         const leadIdx = Math.floor(currentRNG() * LEAD_PATCHES.length);
+        const accIdx = Math.floor(currentRNG() * ACCORDION_PATCHES.length);
         const effectIdx = Math.floor(currentRNG() * EFFECT_PRESETS.length);
         const drumIdx = Math.floor(currentRNG() * DRUM_TONES.length);
         keys.set(KEY_PATCHES[keyIdx]);
         pad.set(PAD_PATCHES[padIdx]);
         bass.set(BASS_PATCHES[bassIdx]);
         lead.set(LEAD_PATCHES[leadIdx]);
+        accordion.set(ACCORDION_PATCHES[accIdx]);
         const ep = EFFECT_PRESETS[effectIdx];
         if (reverb.roomSize !== undefined) reverb.roomSize = ep.reverbDecay;
         if (delay.wet) delay.wet.value = ep.delayWet;
@@ -1239,11 +1816,11 @@
         if (vibrato.wet) vibrato.wet.value = Math.min(vibrato.wet.value, 0.04);
         
         if (filterLFO) {
-            filterLFO.min = Math.max(filterLFO.min, 600); // Keep filter open for clarity
-            filterLFO.max = Math.min(3000, filterLFO.max + 300); 
+            filterLFO.min = Math.max(filterLFO.min, 1200); // Keep filter open for piano clarity
+            filterLFO.max = Math.min(8000, filterLFO.max + 500); 
         }
 
-        const vinylLvl = -42 - currentRNG() * 5; 
+        const vinylLvl = -50 - currentRNG() * 6; // Quiet vinyl crackle behind piano
         vinylNoise.volume.rampTo(vinylLvl, 2);
         
         let rainLvl = -99;
@@ -1276,10 +1853,14 @@
             if(state.mood === 'Dreamy') color = '#60a5fa';
             if(state.mood === 'Warm') color = '#f59e0b';
             document.documentElement.style.setProperty('--dynamic-color', color);
+
+            // Sync canvas overlay if visible
+            if (canvasVisible) syncCanvasOverlay();
         }, 1000); 
 
-        state.barCount = 0;
-        state.section = 'Intro';
+        state.barCount = 4;
+        state.section = 'Verse';
+        canvasDismissed = false; // Reset dismiss on new track
     }
 
     function generateMetadata(seed) {
@@ -1391,14 +1972,16 @@
     
     function startSequencer() {
         Tone.Transport.cancel();
-        Tone.Transport.start("+0.1");
+        if (Tone.Transport.state !== 'started') {
+            Tone.Transport.start("+0.1");
+        }
         let step = 0;
-        // Seeded RNG for deterministic sequencer behavior (no more Math.random())
+        // Seeded RNG for deterministic sequencer behavior — re-seeded each track for variety
         let seqRNG = mulberry32(state.currentSeed + 77777);
 
         Tone.Transport.scheduleRepeat((time) => {
             const patIdx = step % 16;
-            const sixteenth = step % 4;
+            const sixteenth = step % 4; 
             const config = STYLES[state.style];
 
             // Humanized timing: swing + subtle micro-timing variation
@@ -1412,98 +1995,150 @@
             const isChorus = state.section === 'Chorus';
             const isBreakdown = state.section === 'Breakdown';
 
-            // Current chord with voice leading for smooth transitions
+            // Current chord with voice leading for smooth transitions (octave 4 for piano register)
             const progIdx = state.barCount % 4;
             const degree = state.progression[progIdx];
-            const rawNotes = getChord(degree, state.scale, 3, state.useSeventh);
+            const rawNotes = getChord(degree, state.scale, 4, state.useSeventh);
             const notes = voiceLead(rawNotes, state.lastChordVoicing);
-            const bassRoot = state.scale[(degree - 1 + 7) % 7] + 2;
-            const bassFifth = state.scale[(degree + 3) % 7] + 2;
-            const bassRootUp = state.scale[(degree - 1 + 7) % 7] + 3;
 
-            // ─── HARMONY (Keys/Chords) — short staccato chords for hip-hop feel ───
+            // ─── PIANO ─── The LEAD voice — own reverb path, bypasses lowpass filter.
+            const pianoVal = state.pianoPattern[patIdx];
+            if (pianoVal > 0 && !isBreakdown) {
+                if (pianoVal === 1) {
+                    // Full chord — quarter note for sustain, high velocity to cut through
+                    const chordVel = isChorus ? (0.6 + seqRNG() * 0.15) : (0.45 + seqRNG() * 0.12);
+                    keys.triggerAttackRelease(notes, "4n", t, chordVel);
+                } else if (pianoVal === 3) {
+                    // Arpeggio — eighth note single chord tones, melodic and clear
+                    const noteIdx = Math.floor(step / 2) % notes.length;
+                    const arpVel = 0.4 + seqRNG() * 0.12;
+                    keys.triggerAttackRelease(notes[noteIdx], "8n", t, arpVel);
+                }
+            }
+            // Update voice leading reference on bar start
             if (step % 16 === 0) {
-                const chordVel = 0.15 + seqRNG() * 0.08;
-                // Keys: rhythmic stabs, not sustained drones
-                if (!isBreakdown) {
-                    keys.triggerAttackRelease(notes, "2n", t, chordVel);
-                }
-                // Pad: very sparse background warmth — NOT on every bar
-                if (isIntro) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.15);
-                } else if (isBreakdown && seqRNG() > 0.3) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "1m", t, 0.12);
-                } else if (isChorus && seqRNG() > 0.6) {
-                    pad.triggerAttackRelease(notes.slice(0, 3), "2n", t, 0.1);
-                }
-                // Pad skipped entirely in Verse — let drums and bass breathe
                 state.lastChordVoicing = notes;
             }
+            // Pad: only in breakdowns as ambient fill — very gentle wash
+            if (step % 16 === 0 && isBreakdown && seqRNG() > 0.5) {
+                const padNotes = getChord(degree, state.scale, 3, false);
+                pad.triggerAttackRelease(padNotes.slice(0, 3), "1m", t, 0.05);
+            }
 
-            // Chord anticipation: rare rhythmic push (5% in chorus only)
-            if (step % 16 === 14 && isChorus && seqRNG() < 0.05) {
+            // Chord anticipation: rare rhythmic push (8% in chorus only)
+            if (step % 16 === 14 && isChorus && seqRNG() < 0.08) {
                 const nextDeg = state.progression[(state.barCount + 1) % 4];
-                const antNotes = getChord(nextDeg, state.scale, 3, state.useSeventh);
-                keys.triggerAttackRelease(antNotes, "8n", t, 0.08);
+                const antNotes = getChord(nextDeg, state.scale, 4, state.useSeventh);
+                keys.triggerAttackRelease(antNotes, "16n", t, 0.15);
             }
 
-            // ─── BASS ─── (octave 2 for warmth/audibility, "8n" for sustain)
-            if (!isIntro) {
-                const bpVal = state.bassPattern[patIdx];
-                const bassVel = 0.35 + seqRNG() * 0.12;
-                if (bpVal === 1) bass.triggerAttackRelease(bassRoot, "8n", t, bassVel);
-                else if (bpVal === 2) bass.triggerAttackRelease(bassFifth, "8n", t, bassVel * 0.9);
-                else if (bpVal === 3) bass.triggerAttackRelease(bassRootUp, "8n", t, bassVel * 0.85);
-            }
-
-            // ─── LEAD MELODY ─── (barely there — background color, not a melody line)
-            if (config.hasLead && !isIntro && !isBreakdown) {
-                const leadProb = isChorus ? 0.12 : (isVerse ? 0.03 : 0);
-                // Play on half-beats (step % 8) not every beat — more space, less machine
-                if (leadProb > 0 && seqRNG() < leadProb && step % 8 === 0) {
-                    const motifIdx = (Math.floor(step / 8) + state.barCount) % (state.trackMotif.length || 8);
-                    if (state.trackMotif[motifIdx]) {
-                        const leadVel = isChorus ? (0.1 + seqRNG() * 0.06) : (0.06 + seqRNG() * 0.04);
-                        lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t, leadVel);
+            // ─── ACCORDION ─── Warm reed pads and gentle fills — lo-fi texture layer
+            // Plays in Verse and Breakdown for warmth, complements piano
+            const accVal = state.accordionPattern[patIdx];
+            if (accVal > 0 && !isIntro) {
+                // Accordion plays most in Verse/Breakdown, lighter in Chorus (piano leads there)
+                const accActive = isBreakdown || isVerse || (isChorus && seqRNG() < 0.3);
+                if (accActive) {
+                    // Use octave 3 for warm, low register — sits under the piano
+                    const accNotes = getChord(degree, state.scale, 3, state.useSeventh);
+                    const accVoiced = voiceLead(accNotes, state.lastChordVoicing);
+                    if (accVal === 1) {
+                        // Sustained chord — gentle, breathing
+                        const accVel = isBreakdown ? (0.1 + seqRNG() * 0.06) : (0.14 + seqRNG() * 0.08);
+                        accordion.triggerAttackRelease(accVoiced.slice(0, 3), "2n", t, accVel);
+                    } else if (accVal === 3) {
+                        // Single arpeggio note — melodic fill
+                        const noteIdx = Math.floor(step / 4) % accVoiced.length;
+                        const arpVel = 0.1 + seqRNG() * 0.06;
+                        accordion.triggerAttackRelease(accVoiced[noteIdx], "4n", t, arpVel);
                     }
                 }
             }
 
-            // ─── DRUMS ───
+            // ─── BASS ─── Hip-hop sub — punchy, always present in verse+chorus, follows the chord.
+            // Derives notes directly from getChord() at octave 2 for deep sub.
+            if (!isIntro) {
+                const bpVal = state.bassPattern[patIdx];
+                if (bpVal > 0) {
+                    const bassChord = getChord(degree, state.scale, 2, state.useSeventh);
+                    let bassNote;
+                    if (bpVal === 1) {
+                        bassNote = bassChord[0];
+                    } else if (bpVal === 3) {
+                        bassNote = bassChord[1];
+                    } else if (bpVal === 5) {
+                        bassNote = bassChord[2];
+                    } else if (bpVal === 7) {
+                        const nextDeg = state.progression[(state.barCount + 1) % 4];
+                        const nextChord = getChord(nextDeg, state.scale, 2, false);
+                        bassNote = nextChord[0];
+                    }
+                    if (bassNote) {
+                        // Breakdown: quieter bass, Verse/Chorus: full punch
+                        const bassVel = isBreakdown ? (0.2 + seqRNG() * 0.1) : (0.5 + seqRNG() * 0.15);
+                        bass.triggerAttackRelease(bassNote, "8n", t, bassVel);
+                    }
+                }
+            }
+
+            // ─── LEAD MELODY ─── (whisper-quiet — ambient color from chord tones, not a competing line)
+            // Lead picks from the SAME chord the piano and bass are playing — everything matches.
+            if (config.hasLead && !isIntro && !isBreakdown) {
+                const leadProb = isChorus ? 0.08 : (isVerse ? 0.02 : 0);
+                // Play on half-beats (step % 8) not every beat — more space, more relaxing
+                if (leadProb > 0 && seqRNG() < leadProb && step % 8 === 0) {
+                    // Use a chord tone from the current chord (octave 5 for shimmer above piano)
+                    const leadChord = getChord(degree, state.scale, 5, state.useSeventh);
+                    const motifIdx = (Math.floor(step / 8) + state.barCount) % (state.trackMotif.length || 8);
+                    // Blend: 70% chord tones (guaranteed harmony), 30% motif (melodic color)
+                    let leadNote;
+                    if (seqRNG() < 0.7) {
+                        leadNote = leadChord[motifIdx % leadChord.length];
+                    } else if (state.trackMotif[motifIdx]) {
+                        leadNote = state.trackMotif[motifIdx];
+                    }
+                    if (leadNote) {
+                        const leadVel = isChorus ? (0.06 + seqRNG() * 0.04) : (0.04 + seqRNG() * 0.03);
+                        lead.triggerAttackRelease(leadNote, "8n", t, leadVel);
+                    }
+                }
+            }
+
+            // ─── DRUMS ─── Hip-hop groove — punchy kick, snappy snare, crisp hats
             if (!isIntro && !isBreakdown) {
-                // Kick with velocity humanization
+                // Kick — punchy boom-bap thump
                 if (state.drumPattern[patIdx] === 1) {
-                    const kickVel = 0.65 + seqRNG() * 0.2;
+                    const kickVel = 0.7 + seqRNG() * 0.2;
                     kick.triggerAttackRelease("C1", "8n", t, kickVel);
                 }
-                // Snare with velocity humanization
+                // Snare — crisp snap with velocity humanization
                 if (state.drumPattern[patIdx] === 2) {
-                    const snareVel = 0.55 + seqRNG() * 0.2;
+                    const snareVel = 0.6 + seqRNG() * 0.2;
                     snare.triggerAttackRelease("16n", t, snareVel);
                 }
-                // Ghost snare: very rare soft accent (max 3% — drums stay tight)
-                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.03) {
-                    snare.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.04);
+                // Ghost snare: subtle accent for hip-hop groove (5%)
+                if (state.drumPattern[patIdx] === 0 && sixteenth === 2 && seqRNG() < 0.05) {
+                    snare.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.06);
                 }
 
-                // Hi-hat: pattern-based with velocity humanization
+                // Hi-hat: pattern-based — crisp and present
                 const hhVal = state.hihatPattern[patIdx];
                 if (hhVal === 1) {
-                    hihat.triggerAttackRelease("32n", t, 0.13 + seqRNG() * 0.08);
-                } else if (hhVal === 2) { // Ghost hit — barely audible texture
-                    hihat.triggerAttackRelease("32n", t, 0.04 + seqRNG() * 0.04);
-                } else if (hhVal === 3) { // Open hat — longer ring
-                    hihat.triggerAttackRelease("16n", t, 0.18 + seqRNG() * 0.08);
+                    hihat.triggerAttackRelease("32n", t, 0.18 + seqRNG() * 0.1);
+                } else if (hhVal === 2) { // Ghost hit — soft texture
+                    hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.05);
+                } else if (hhVal === 3) { // Open hat — ring
+                    hihat.triggerAttackRelease("16n", t, 0.22 + seqRNG() * 0.1);
                 }
             } else if (isIntro) {
-                // Intro: very sparse hi-hat to gently establish pulse
-                if (step % 8 === 0 && seqRNG() < 0.5) {
-                    hihat.triggerAttackRelease("32n", t, 0.05 + seqRNG() * 0.03);
+                // Intro: hi-hat establishing pulse
+                if (step % 8 === 0 && seqRNG() < 0.6) {
+                    hihat.triggerAttackRelease("32n", t, 0.08 + seqRNG() * 0.05);
                 }
             } else if (isBreakdown) {
-                // Breakdown: sparse atmospheric pulse
-                if (step % 8 === 0 && seqRNG() < 0.35) {
-                    hihat.triggerAttackRelease("32n", t, 0.04 + seqRNG() * 0.03);
+                // Breakdown: sparse but present
+                if (step % 8 === 0 && seqRNG() < 0.45) {
+                    hihat.triggerAttackRelease("32n", t, 0.06 + seqRNG() * 0.04);
                 }
             }
 
@@ -1536,6 +2171,10 @@
         document.getElementById('progress-bar').style.width = percent + '%';
         const mcBar = document.getElementById('mobile-progress-bar');
         if (mcBar) mcBar.style.width = percent + '%';
+        // Canvas overlay progress
+        const cvBar = document.getElementById('canvas-progress-bar');
+        if (cvBar) cvBar.style.width = percent + '%';
+
         const s = Math.floor(elapsed / 1000);
         const totalS = Math.floor(duration / 1000);
         const m = Math.floor(s/60);
@@ -1544,12 +2183,19 @@
         document.getElementById('time-current').innerText = timeStr;
         const mcCur = document.getElementById('mobile-time-current');
         if (mcCur) mcCur.innerText = timeStr;
+        // Canvas overlay time
+        const cvCur = document.getElementById('canvas-time-current');
+        if (cvCur) cvCur.innerText = timeStr;
+
         const totalM = Math.floor(totalS/60);
         const totalSec = (totalS%60).toString().padStart(2,'0');
         const totalStr = `${totalM}:${totalSec}`;
         document.getElementById('time-total').innerText = totalStr;
         const mcTot = document.getElementById('mobile-time-total');
         if (mcTot) mcTot.innerText = totalStr;
+        // Canvas overlay total
+        const cvTot = document.getElementById('canvas-time-total');
+        if (cvTot) cvTot.innerText = totalStr;
     }
 
     function updatePlayButtonUI(playing) {
@@ -1586,11 +2232,12 @@
                 Tone.Transport.pause();
                 vinylNoise.stop(); rainNoise.stop(); windNoise.stop();
                 if(padVolumeLFO) padVolumeLFO.stop();
-                keys.releaseAll(); pad.releaseAll(); 
+                keys.releaseAll(); pad.releaseAll(); accordion.releaseAll(); 
             }, 250);
             // Pause keep-alive audio & update lock screen state
             if (keepAliveAudio) keepAliveAudio.pause();
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+            hideCanvas(); // Pause canvas video
         } else {
             if(Tone.context.state !== 'running') await Tone.start();
             radioGroup.gain.value = 1; 
@@ -1601,6 +2248,7 @@
             // Resume keep-alive audio & update lock screen state
             if (keepAliveAudio) keepAliveAudio.play().catch(() => {});
             if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+            startCanvasTimer(); // Restart canvas timer on resume
             updatePlayButtonUI(true);
             drawVisualizer();
         }
