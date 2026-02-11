@@ -562,11 +562,11 @@
     let isTransitioning = false;
     let isInitializing = false; 
 
-    // --- METADATA ---
-    const TITLES_A = ["Midnight", "Sun", "Urban", "Funky", "Cosmic", "Rainy", "Sunday", "Coffee", "Neon", "Happy", "Silent", "Golden", "Floating", "Hollow", "Velvet"];
-    const TITLES_B = ["Dreams", "Day", "Loop", "Groove", "Thoughts", "Vibes", "Window", "Clouds", "Station", "Memories", "Soul", "Static", "Waves", "Pages", "Lights"];
-    const ARTISTS_A = ["Lo-Fi", "Chill", "Beats", "Bedroom", "Analog", "Digital", "Sleepy", "Mellow", "Jazz", "Retro"];
-    const ARTISTS_B = ["Boy", "Girl", "Project", "Collective", "Hop", "Cat", "Smith", "Waves", "FM", "Tapes"];
+    // --- METADATA (expanded for more variety so tracks feel less samey) ---
+    const TITLES_A = ["Midnight", "Sun", "Urban", "Funky", "Cosmic", "Rainy", "Sunday", "Coffee", "Neon", "Happy", "Silent", "Golden", "Floating", "Hollow", "Velvet", "Soft", "Late", "Early", "Pink", "Blue", "Warm", "Cold", "Lost", "Safe"];
+    const TITLES_B = ["Dreams", "Day", "Loop", "Groove", "Thoughts", "Vibes", "Window", "Clouds", "Station", "Memories", "Soul", "Static", "Waves", "Pages", "Lights", "Hours", "Nights", "Side", "Noise", "Tape", "Room", "Sky", "Mood", "Beat"];
+    const ARTISTS_A = ["Lo-Fi", "Chill", "Beats", "Bedroom", "Analog", "Digital", "Sleepy", "Mellow", "Jazz", "Retro", "Lazy", "Quiet", "Soft", "Deep", "Warm"];
+    const ARTISTS_B = ["Boy", "Girl", "Project", "Collective", "Hop", "Cat", "Smith", "Waves", "FM", "Tapes", "Corner", "Society", "Lab", "Room", "Band"];
 
     // --- CONFIG ---
     const NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -578,16 +578,23 @@
     const DRUM_LOOPS = {
         'Basic': [1,0,0,0, 2,0,0,0, 1,0,0,0, 2,0,0,0],
         'BoomBap': [1,0,0,1, 2,0,0,0, 0,1,0,0, 2,0,0,0],
-        'Dilla': [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,0,0], // Late kick
-        'Chill': [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0]
+        'Dilla': [1,0,0,0, 2,0,0,1, 0,0,1,0, 2,0,0,0],
+        'Chill': [1,0,0,0, 0,0,0,0, 2,0,0,0, 0,0,0,0],
+        'House': [1,0,1,0, 2,0,1,0, 1,0,1,0, 2,0,1,0],
+        'Trap': [1,0,0,1, 2,0,2,0, 1,0,0,1, 2,0,0,0],
+        'Sparse': [1,0,0,0, 0,2,0,0, 1,0,0,0, 0,0,2,0],
+        'Syncopated': [1,0,0,1, 0,2,0,0, 1,0,1,0, 2,0,0,1]
     };
 
     const STYLES = {
         'Chill Hop': { bpmRange: [80, 92], swing: 0.06, drumDensity: 0.7, bitCrush: 0, hasLead: true, isGuitar: false, color: '#ef4444' },
         'Classic': { bpmRange: [70, 80], swing: 0.04, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#f59e0b' },
         'Sleepy': { bpmRange: [50, 65], swing: 0.02, drumDensity: 0.1, bitCrush: 8, hasLead: false, isGuitar: false, color: '#3b82f6' },
-        'Summer': { bpmRange: [85, 100], swing: 0.03, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: true, color: '#eab308' }, 
-        'Funk': { bpmRange: [90, 105], swing: 0.15, drumDensity: 0.8, bitCrush: 0, hasLead: true, isGuitar: false, color: '#d946ef' } 
+        'Summer': { bpmRange: [85, 100], swing: 0.03, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: true, color: '#eab308' },
+        'Funk': { bpmRange: [90, 105], swing: 0.15, drumDensity: 0.8, bitCrush: 0, hasLead: true, isGuitar: false, color: '#d946ef' },
+        'Jazzy': { bpmRange: [72, 88], swing: 0.12, drumDensity: 0.5, bitCrush: 2, hasLead: true, isGuitar: false, color: '#8b5cf6' },
+        'Minimal': { bpmRange: [60, 72], swing: 0.02, drumDensity: 0.2, bitCrush: 6, hasLead: false, isGuitar: false, color: '#64748b' },
+        'Bounce': { bpmRange: [88, 98], swing: 0.08, drumDensity: 0.65, bitCrush: 0, hasLead: true, isGuitar: false, color: '#ec4899' }
     };
 
     const state = {
@@ -622,6 +629,36 @@
     let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter;
     let vinylNoise, rainNoise, windNoise, filterLFO, padVolumeLFO, analyser;
     let autoPanner, tremolo, vibrato;
+    let pageVisible = true;
+
+    /** Resume AudioContext when page is visible again (fixes fragmented sound in car/background) */
+    function setupVisibilityHandling() {
+        pageVisible = document.visibilityState === 'visible';
+        document.addEventListener('visibilitychange', () => {
+            pageVisible = document.visibilityState === 'visible';
+            const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
+            if (ctx && ctx.state === 'suspended' && state.isPlaying) {
+                ctx.resume().then(() => {
+                    if (state.isPlaying) {
+                        Tone.Transport.start();
+                        if (vinylNoise) vinylNoise.start();
+                        if (padVolumeLFO) padVolumeLFO.start();
+                    }
+                }).catch(() => {});
+            }
+        });
+        // Resume on user gesture (e.g. tap after returning to app)
+        const resumeOnInteraction = () => {
+            const ctx = Tone.context.rawContext || (Tone.getContext && Tone.getContext().rawContext);
+            if (ctx && ctx.state === 'suspended') {
+                ctx.resume().then(() => {}).catch(() => {});
+            }
+            document.removeEventListener('click', resumeOnInteraction);
+            document.removeEventListener('touchstart', resumeOnInteraction);
+        };
+        document.addEventListener('click', resumeOnInteraction, { once: true });
+        document.addEventListener('touchstart', resumeOnInteraction, { once: true });
+    }
 
     // --- INIT ---
     async function initAudio() {
@@ -629,7 +666,11 @@
         isInitializing = true;
 
         await Tone.start();
-        Tone.context.latencyHint = 'playback'; 
+        Tone.context.latencyHint = 'playback';
+        // Reduce fragmentation when tab is in background (e.g. car): use a slightly larger buffer
+        if (Tone.context.rawContext && Tone.context.rawContext.baseLatency) {
+            try { Tone.context.rawContext.latencyHint = 'playback'; } catch (e) {}
+        }
         
         radioGroup = new Tone.Gain(1).toDestination();
         
@@ -691,6 +732,9 @@
         masterFilter.connect(analyser);
 
         if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} }
+        
+        // Keep AudioContext running when tab is in background (prevents car/phone fragmentation)
+        setupVisibilityHandling();
 
         state.isPlaying = true;
         isInitializing = false;
@@ -711,6 +755,12 @@
         updatePlayButtonUI(true);
     }
 
+    // Mix time-based pointer into a more varied seed so consecutive tracks don't sound alike
+    function diversifySeed(pointer) {
+        const p = Math.floor(pointer);
+        return ((p * 2654435761) >>> 0) + (p % 86400000);
+    }
+
     // --- ENGINE ---
     function getCurrentTrackInfo() {
         const now = Date.now() + state.timeOffset;
@@ -721,11 +771,12 @@
         let duration = 0;
 
         while (pointer < now + MAX_TRACK_MS) {
-            const trackRng = mulberry32(Math.floor(pointer));
+            const seedForDuration = diversifySeed(pointer);
+            const trackRng = mulberry32(seedForDuration);
             duration = MIN_TRACK_MS + Math.floor(trackRng() * (MAX_TRACK_MS - MIN_TRACK_MS));
             
             if (pointer + duration > now) {
-                trackSeed = Math.floor(pointer);
+                trackSeed = seedForDuration;
                 return { seed: trackSeed, startTime: pointer, duration: duration };
             }
             pointer += duration;
@@ -799,16 +850,21 @@
         const drumKey = drumKeys[Math.floor(currentRNG() * drumKeys.length)];
         state.drumPattern = DRUM_LOOPS[drumKey];
         
-        // 2. Motif (Melody Hook) - 4 notes that repeat
+        // 2. Motif (Melody Hook) - 8 notes for more variety per track
         state.trackMotif = [];
-        for(let i=0; i<4; i++) {
-            // Pick notes from scale
+        const motifLen = 8;
+        for (let i = 0; i < motifLen; i++) {
             const idx = Math.floor(currentRNG() * 7);
-            state.trackMotif.push(state.scale[idx] + "4"); // 4th octave
+            const octave = 4 + (currentRNG() > 0.85 ? 1 : 0);
+            state.trackMotif.push(state.scale[idx] + octave);
         }
 
-        // 3. Bass Groove (Root... then maybe 5th)
-        state.bassPattern = [1, 0, 0, 0, 0, 0, 0, 0, (currentRNG()>0.5?1:0), 0, 0, 0, 0, 0, 0, 0];
+        // 3. Bass Groove - more variation by style
+        const bassRng = currentRNG();
+        state.bassPattern = [
+            1, bassRng > 0.5 ? 0 : 1, 0, 0, 0, 0, 0, 0,
+            currentRNG() > 0.4 ? 1 : 0, 0, 0, 0, 0, 0, 0, 0
+        ];
 
         bitCrusher.wet.value = (state.style === 'Chill Hop' || state.style === 'Summer') ? 0 : 0.5; 
         bitCrusher.bits.value = config.bitCrush || 8; 
@@ -876,31 +932,26 @@
         let pointer = state.trackStartTime; 
         let trackRng, dur, seed;
 
-        let currentSeed = Math.floor(pointer);
-        let rng = mulberry32(currentSeed);
-        let currentDur = MIN_TRACK_MS + Math.floor(rng() * (MAX_TRACK_MS - MIN_TRACK_MS));
-        
+        seed = diversifySeed(pointer);
+        trackRng = mulberry32(seed);
+        let currentDur = MIN_TRACK_MS + Math.floor(trackRng() * (MAX_TRACK_MS - MIN_TRACK_MS));
         pointer += currentDur;
 
-        for(let i=1; i<=3; i++) {
-            seed = Math.floor(pointer);
-            
+        for (let i = 1; i <= 3; i++) {
+            seed = diversifySeed(pointer);
             trackRng = mulberry32(seed);
             dur = MIN_TRACK_MS + Math.floor(trackRng() * (MAX_TRACK_MS - MIN_TRACK_MS));
             
             const nextMeta = generateMetadata(seed);
             const nextStyle = getStyleForSeed(seed);
-            
             addTrackRow(queueContainer, i, nextMeta, nextStyle, false);
-            
             pointer += dur;
         }
     }
 
     function getStyleForSeed(seed) {
-        let rng = mulberry32(seed);
         const styleKeys = Object.keys(STYLES);
-        return styleKeys[Math.floor(rng() * styleKeys.length)];
+        return styleKeys[Math.floor(mulberry32(seed)() * styleKeys.length)];
     }
 
     function addTrackRow(container, num, meta, styleName, isActive) {
@@ -939,12 +990,12 @@
     
     function generateProgression(mode) {
         let templates;
-        if(mode === 'Major' || mode === 'Lydian') {
-             templates = [[1, 5, 6, 4], [1, 4, 5, 1], [2, 5, 1, 1], [1, 4, 1, 5]];
+        if (mode === 'Major' || mode === 'Lydian') {
+            templates = [[1, 5, 6, 4], [1, 4, 5, 1], [2, 5, 1, 1], [1, 4, 1, 5], [1, 6, 4, 5], [4, 1, 5, 6], [1, 3, 4, 5]];
         } else if (mode === 'Mixolydian') {
-             templates = [[1, 7, 4, 1], [1, 4, 1, 7]];
+            templates = [[1, 7, 4, 1], [1, 4, 1, 7], [1, 4, 7, 1], [4, 1, 7, 4]];
         } else {
-             templates = [[2, 5, 1, 6], [1, 6, 2, 5], [6, 4, 1, 5], [4, 5, 3, 6], [1, 5, 6, 3]];
+            templates = [[2, 5, 1, 6], [1, 6, 2, 5], [6, 4, 1, 5], [4, 5, 3, 6], [1, 5, 6, 3], [1, 4, 6, 5], [6, 2, 5, 1], [3, 6, 4, 1]];
         }
         return templates[Math.floor(currentRNG() * templates.length)];
     }
@@ -987,13 +1038,11 @@
                 bass.triggerAttackRelease(rootNote, "2n", t, 0.7);
             }
 
-            // HIT SONG: Play the generated Motif
+            // HIT SONG: Play the generated Motif (8 notes, cycle every 2 bars)
             if (config.hasLead && state.section === 'Verse') {
-                // Play motif notes on specific steps (0, 4, 8, 12)
                 if (step % 4 === 0) {
-                    const motifIdx = Math.floor(step / 4);
-                    // Use the generated motif, not random notes
-                    if (state.trackMotif && state.trackMotif[motifIdx] && Math.random() > 0.3) {
+                    const motifIdx = (Math.floor(step / 4) + state.barCount * 2) % (state.trackMotif.length || 8);
+                    if (state.trackMotif && state.trackMotif[motifIdx] && Math.random() > 0.25) {
                         lead.triggerAttackRelease(state.trackMotif[motifIdx], "8n", t);
                     }
                 }
@@ -1095,6 +1144,8 @@
     function drawVisualizer() {
         if (!state.isPlaying) return;
         requestAnimationFrame(drawVisualizer);
+        // Pause visualizer when tab hidden to save CPU and reduce audio fragmentation (e.g. in car)
+        if (!pageVisible || document.visibilityState === 'hidden') return;
         const bufferLength = analyser.getValue().length;
         const dataArray = analyser.getValue(); 
         const w = canvas.width;
