@@ -1674,8 +1674,8 @@
             return !!(touch || narrow);
         };
 
-        // Mastering chain: prevent clipping and glue the mix (order: clipper → limiter → destination)
-        limiter = new Tone.Limiter(-1).connect(radioGroup); // Final ceiling with slight headroom
+        // Mastering chain: prevent clipping and glue the mix (order: trim → clipper → limiter → destination)
+        limiter = new Tone.Limiter(-2.5).connect(radioGroup); // Lower ceiling to avoid distortion and gracchii
         const softClipCurve = (() => {
             const n = 256;
             const curve = new Float32Array(n);
@@ -1685,7 +1685,8 @@
             }
             return curve;
         })();
-        softClipper = new Tone.WaveShaper(softClipCurve).connect(limiter);
+        const masterTrim = new Tone.Gain(0.82).connect(limiter); // -1.7 dB trim — keeps soft clipper from distorting on peaks
+        softClipper = new Tone.WaveShaper(softClipCurve).connect(masterTrim);
         masterCompressor = new Tone.Compressor(-22, 2.5).connect(softClipper); // Gentler glue — less squash when many instruments play
         masterCompressor.attack.value = 0.005;
         masterCompressor.release.value = 0.2;
@@ -1698,7 +1699,7 @@
 
         if (isMobile()) {
             masterHighPass.frequency.value = 60;        // Less sub on small drivers, avoids mud and distortion
-            limiter.threshold.value = -2.5;             // Slightly more headroom for inconsistent mobile DACs
+            limiter.threshold.value = -3;               // Extra headroom on mobile — reduces gracchii on phones
             mobilePresenceFilter = new Tone.Filter(2400, 'highshelf', -12);
             mobilePresenceFilter.gain.value = 1.8;     // +1.8 dB presence so keys/vocals cut through on phone speakers
             masterCompressor.disconnect(softClipper);
@@ -1717,10 +1718,10 @@
         filterLFO = new Tone.LFO(0.05, 2200, 7000).start(); // Wider range — keeps more presence when dark, instruments cut through
         filterLFO.connect(masterFilter.frequency);
         
-        reverb = new Tone.JCReverb(0.3).connect(masterFilter);
+        reverb = new Tone.JCReverb(0.22).connect(masterFilter); // Slightly drier — less buildup when many instruments play, reduces distortion
         delay = new Tone.PingPongDelay("8n", 0.1).connect(reverb);
         chorus = new Tone.Chorus(2, 2.5, 0.5).connect(delay).start(); 
-        bitCrusher = new Tone.BitCrusher(12).connect(chorus); // 12-bit: warm lo-fi without harsh digital corruption
+        bitCrusher = new Tone.BitCrusher(14).connect(chorus); // 14-bit: warm lo-fi, less harsh than 12-bit when mix is dense
 
         autoPanner = new Tone.AutoPanner("1m").start().connect(delay); // Very slow panning — gentle stereo width
         tremolo = new Tone.Tremolo(1.5, 0.15).start().connect(bitCrusher); // Slow, subtle amplitude shimmer
@@ -1730,10 +1731,10 @@
         // Bypasses masterFilter AND reverb (JCReverb wet=1 was eating the dry signal!).
         // Dry signal: keys → compressor → limiter → radioGroup → destination
         // Reverb send: keys → pianoReverbSend (quiet) → compressor (just for ambience)
-        const pianoReverbSend = new Tone.JCReverb(0.2).connect(compressor);
+        const pianoReverbSend = new Tone.JCReverb(0.18).connect(compressor);
         pianoReverbSend.wet.value = 1; // Send is 100% wet — the dry comes from the direct connection
         keys = new Tone.PolySynth(Tone.FMSynth, {
-            volume: -6,
+            volume: -8,
             harmonicity: 3,
             modulationIndex: 4,
             oscillator: { type: "sine" },
@@ -1761,7 +1762,7 @@
             envelope: { attack: 0.005, decay: 0.35, sustain: 0.75, release: 0.8 },
             modulation: { type: "sine" },
             modulationEnvelope: { attack: 0.003, decay: 0.2, sustain: 0.08, release: 0.3 },
-            volume: -8
+            volume: -10
         }).connect(bassSubCut); 
         lead = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.12, release: 0.7 }, volume: -32 }).connect(vibrato); 
 
@@ -1795,8 +1796,8 @@
         // Bells / glockenspiel — sparse high melody layer, sits above piano and lead
         bells = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.35 }, volume: -28 }).connect(reverb);
 
-        kick = new Tone.MembraneSynth({ volume: -6, pitchDecay: 0.05, octaves: 6 }).connect(compressor);
-        snare = new Tone.NoiseSynth({ volume: -8, envelope: { attack: 0.001, decay: 0.13, sustain: 0 } }).connect(masterFilter); 
+        kick = new Tone.MembraneSynth({ volume: -8, pitchDecay: 0.05, octaves: 6 }).connect(compressor);
+        snare = new Tone.NoiseSynth({ volume: -9, envelope: { attack: 0.001, decay: 0.13, sustain: 0 } }).connect(masterFilter); 
         hihat = new Tone.MetalSynth({ volume: -18, frequency: 150, envelope: { attack: 0.001, decay: 0.04 } }).connect(reverb);
         
         // Foley Layer (Bird chirps, tape clicks etc.)
