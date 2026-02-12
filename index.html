@@ -909,6 +909,17 @@
         'Triplet':    [1,0,0,0, 0,0,2,0, 0,1,0,0],
         'Sparse34':   [1,0,0,0, 0,0,0,0, 2,0,0,0],
     };
+    // Style-consistent drum–bass pairing: kick and bass lock to same pocket
+    const DRUM_BASS_PAIRS = {
+        'Dilla': ['DillaSub', 'LazyGroove', 'BoomBapSub'], 'DillaSwing': ['DillaSub', 'LazyGroove'],
+        'BoomBap': ['BoomBapSub', 'DeepRoot', 'GrooveSub'], 'BoomBap2': ['BoomBapSub', 'GrooveSub'],
+        'NeoSoul': ['NeoSoul', 'DillaSub', 'RnBSub', 'SoulWalk'], 'ChillHop': ['ChillSub', 'DeepRoot', 'DillaSub'],
+        'JazzHop': ['JazzWalk', 'SoulWalk', 'DillaSub'], 'Lofi': ['DeepRoot', 'SubHold', 'ChillSub'],
+        'LofiHeavy': ['BoomBapSub', 'GrooveSub', 'Pulse'], 'Backbeat': ['DeepRoot', 'Pulse', 'RootFifth'],
+        'Trap': ['GrooveSub', 'RnBSub'], 'Pocket': ['DillaSub', 'DeepRoot'], 'HalfTime': ['SubHold', 'Heartbeat', 'DeepRoot'],
+        'Broken': ['LazyGroove', 'GentleWalk', 'DillaSub'], 'Shuffle': ['ChillSub', 'Bounce'],
+        'Swing': ['DillaSub', 'GrooveSub']
+    };
     // --- DEEP LO-FI BASS LINES. Root-focused patterns that lock with the kick and anchor the chord.
     // Values: 0=rest, 1=chord root, 3=chord 3rd, 5=chord 5th, 7=approach (next chord root).
     // Deep sub bass needs SPACE — fewer notes, longer rests, root on beat 1. (16-step = 1 bar)
@@ -1097,35 +1108,32 @@
             [4, 5, 6, 2], [1, 5, 2, 1], [7, 4, 6, 5], [6, 4, 1, 3], [1, 4, 3, 5], [4, 6, 5, 6], [1, 6, 5, 2], [2, 5, 4, 1]
         ]
     };
-    // --- LOFI HOOK CONTOURS. Scale degrees 0..6. Emotional variety: longing, hopeful, melancholic, nostalgic.
+    // --- LOFI HOOK CONTOURS. Scale degrees 0..7 (7 = root up octave). Mature contours: leaps, 7th tension, less nursery-rhyme stepwise.
     const MOTIF_CONTOURS = [
-        [0, 1, 2, 3, 2, 1, 0], [0, 2, 0, 2, 3, 2, 0], [1, 1, 2, 2, 3, 2, 1, 0], [0, 1, 2, 3, 3, 2, 1], [2, 1, 0, 1, 2, 3, 2],
-        [0, 2, 4, 2, 0], [3, 2, 1, 0, 1, 2], [0, 0, 2, 3, 2, 0], [1, 2, 3, 4, 3, 2, 1], [0, 1, 0, 2, 0, 1, 0],
-        [2, 1, 0, 1, 2, 1, 0], [0, 2, 3, 2, 0], [1, 2, 1, 2, 3, 2, 1], [0, 1, 2, 1, 0], [3, 2, 3, 2, 1, 0],
-        [0, 1, 2, 2, 1, 0], [1, 0, 1, 2, 3, 2], [0, 2, 1, 2, 0], [2, 3, 2, 1, 0, 1], [0, 0, 1, 2, 1, 0],
-        [1, 2, 3, 2, 1, 0, 1], [0, 3, 2, 1, 0], [2, 0, 2, 3, 2, 0], [0, 1, 2, 3, 2, 1], [1, 1, 0, 1, 2, 1],
-        [0, 2, 0, 1, 0], [3, 2, 1, 2, 1, 0], [0, 1, 2, 0, 1, 2], [1, 2, 0, 2, 1, 0], [0, 2, 3, 3, 2, 0],
-        [2, 1, 2, 1, 0], [0, 1, 0, 1, 2, 3], [1, 0, 2, 0, 1, 0], [0, 3, 2, 1, 2, 0], [2, 1, 0, 2, 1, 0],
-        [0, 1, 2, 1, 2, 1, 0], [1, 2, 1, 0, 1, 2], [0, 0, 0, 2, 3, 2], [2, 3, 2, 1, 0], [0, 2, 1, 0, 2, 0],
-        [1, 1, 2, 1, 1, 0], [0, 1, 2, 2, 0], [3, 1, 2, 1, 0], [0, 2, 2, 0, 1, 0], [1, 2, 3, 2, 0, 1],
-        [0, 1, 1, 2, 1, 0], [2, 0, 1, 0, 2, 1], [0, 3, 2, 0, 1, 0], [1, 0, 1, 2, 2, 1], [0, 2, 1, 1, 2, 0],
-        [1, 2, 2, 1, 0, 0], [0, 1, 2, 0, 2, 1], [2, 1, 0, 0, 1, 2], [0, 0, 1, 2, 2, 1, 0], [1, 2, 0, 1, 2, 0],
-        [0, 2, 1, 2, 3, 2, 0], [1, 0, 2, 1, 0, 1], [0, 1, 0, 2, 1, 2, 0], [2, 3, 4, 3, 2, 1], [0, 0, 1, 0, 2, 0],
-        [1, 2, 1, 0, 2, 1, 0], [0, 2, 3, 2, 1, 0, 1], [1, 1, 2, 0, 2, 1], [0, 1, 2, 3, 1, 0], [2, 0, 2, 0, 1, 0],
-        [0, 3, 2, 1, 0, 1, 2], [1, 2, 3, 1, 2, 0], [0, 1, 2, 1, 0, 2, 0], [2, 1, 0, 1, 0], [0, 0, 2, 0, 1, 2],
-        [1, 0, 1, 0, 2, 1, 0], [0, 2, 1, 3, 2, 0], [1, 2, 3, 2, 1, 2, 0], [0, 1, 2, 0, 1, 0], [2, 1, 2, 0, 1, 0],
-        [0, 1, 0, 0, 2, 1, 0], [1, 1, 0, 2, 1, 0], [0, 2, 0, 3, 2, 1, 0], [2, 2, 1, 0, 1, 0], [0, 1, 2, 1, 1, 0],
-        [1, 0, 2, 2, 1, 0], [0, 3, 2, 2, 1, 0], [1, 2, 1, 2, 0, 0], [0, 0, 2, 1, 2, 0], [2, 1, 0, 2, 0, 1],
-        [0, 1, 2, 3, 0, 1, 0], [1, 2, 0, 0, 1, 2, 0], [0, 2, 1, 0, 1, 0], [3, 2, 1, 0, 0, 1], [0, 1, 1, 0, 2, 1],
-        [1, 0, 0, 1, 2, 1, 0], [0, 2, 2, 1, 0, 1], [1, 2, 0, 2, 1, 2, 0], [0, 1, 2, 2, 1, 1, 0], [2, 0, 1, 2, 1, 0],
-        [0, 0, 1, 2, 0, 1, 0], [1, 1, 2, 3, 2, 0], [0, 2, 3, 1, 2, 0], [2, 1, 0, 1, 2, 0], [0, 1, 0, 2, 0, 1, 2],
-        [1, 2, 1, 0, 0, 1, 0], [0, 3, 1, 2, 1, 0], [1, 0, 1, 2, 0, 2, 0], [0, 2, 1, 2, 0, 0], [2, 3, 2, 0, 1, 0],
-        [0, 1, 2, 0, 0, 1, 0], [1, 2, 2, 0, 1, 0], [0, 0, 2, 1, 0, 2, 0], [1, 0, 2, 1, 2, 0], [0, 2, 0, 1, 2, 1, 0],
-        [1, 1, 0, 1, 0, 2, 0], [0, 1, 3, 2, 1, 0], [2, 0, 0, 1, 2, 0], [0, 1, 2, 1, 0, 0, 1], [1, 2, 0, 1, 0, 1, 0],
-        // --- Emotional / lo-fi character contours (longing, hopeful, melancholic, nostalgic)
-        [5, 4, 3, 2, 1, 0], [5, 5, 4, 3, 2, 1], [4, 3, 2, 1, 0, 1], [0, 1, 2, 3, 4, 3], [1, 2, 3, 4, 3, 2, 1],
-        [3, 2, 1, 0, 1, 2], [1, 0, 1, 2, 1, 0], [2, 1, 0, 1, 0], [4, 4, 3, 2, 1, 0], [0, 1, 2, 2, 1, 0, 0],
-        [6, 5, 4, 3, 2, 1], [1, 2, 3, 2, 1, 0, 1], [0, 2, 1, 0, 2, 1], [3, 3, 2, 1, 0], [2, 1, 2, 1, 0, 1]
+        // --- Mature / sophisticated (leaps, tension, unexpected motion) — weighted first so they're picked more
+        [0, 3, 5, 2, 0], [2, 5, 0, 3, 6], [4, 1, 6, 3, 0], [0, 4, 2, 6, 3, 1], [3, 6, 2, 5, 0],
+        [1, 4, 2, 0, 3, 5], [5, 2, 0, 4, 1], [0, 2, 5, 3, 1, 4], [6, 3, 0, 4, 2], [2, 0, 4, 1, 6, 3],
+        [4, 6, 2, 0, 3], [0, 5, 2, 6, 4, 1], [3, 0, 5, 2, 6, 1], [1, 6, 4, 2, 0, 3], [5, 3, 6, 2, 0],
+        [0, 4, 1, 5, 2, 6], [6, 2, 5, 0, 3, 1], [2, 6, 3, 0, 4], [3, 5, 0, 2, 6, 1], [0, 3, 6, 2, 4, 0],
+        [4, 0, 2, 5, 3, 1], [1, 3, 6, 4, 0, 2], [5, 0, 3, 6, 2], [0, 6, 3, 1, 4, 2], [2, 4, 0, 6, 3, 5],
+        [6, 4, 1, 3, 0, 2], [3, 1, 4, 6, 2, 0], [0, 2, 4, 6, 3, 1], [1, 5, 2, 0, 4, 3], [5, 1, 4, 0, 6, 2],
+        [2, 5, 1, 4, 0], [0, 4, 6, 2, 5, 0], [4, 2, 6, 0, 3, 5], [3, 0, 4, 2, 6, 1], [6, 0, 3, 5, 1, 2],
+        [0, 5, 3, 1, 6, 4], [1, 4, 6, 3, 0, 5], [5, 2, 6, 0, 4], [2, 6, 1, 4, 0, 3], [0, 3, 5, 1, 4, 2],
+        [4, 1, 3, 6, 2, 0], [3, 6, 0, 2, 5, 1], [6, 1, 0, 4, 2, 5], [0, 2, 6, 4, 1, 3], [1, 6, 2, 0, 5, 3],
+        [5, 0, 2, 4, 6, 1], [2, 4, 3, 0, 6, 1], [0, 6, 4, 3, 1, 2], [4, 3, 0, 5, 2, 6], [3, 2, 6, 1, 4, 0],
+        // --- With octave (7 = root up): more dramatic, less predictable
+        [0, 7, 3, 5, 2], [2, 5, 7, 0, 3], [4, 0, 7, 2, 5], [0, 4, 7, 2, 6, 3], [6, 3, 0, 7, 2],
+        [1, 4, 7, 0, 3], [5, 2, 0, 7, 4], [0, 2, 5, 7, 3, 1], [3, 7, 0, 4, 2], [2, 0, 7, 4, 1],
+        [4, 6, 2, 7, 0], [0, 5, 7, 2, 6], [3, 0, 5, 7, 2], [1, 6, 4, 7, 0, 3], [5, 3, 6, 7, 0],
+        // --- Emotional / lo-fi (longing, melancholic) — wider range, 7th tension
+        [5, 4, 3, 2, 1, 0], [5, 5, 4, 3, 2, 1], [4, 3, 2, 1, 0, 1], [0, 1, 2, 3, 4, 3], [6, 5, 4, 3, 2, 1],
+        [3, 2, 1, 0, 1, 2], [4, 4, 3, 2, 1, 0], [6, 5, 4, 3, 2, 0], [1, 2, 3, 2, 1, 0, 1], [0, 2, 1, 0, 2, 1],
+        [3, 3, 2, 1, 0], [2, 1, 2, 1, 0, 1], [0, 1, 2, 3, 1, 0], [2, 5, 3, 0, 4, 1], [0, 3, 2, 1, 0, 1, 2],
+        [1, 2, 3, 1, 2, 0], [0, 2, 3, 2, 1, 0, 1], [1, 1, 2, 0, 2, 1], [4, 2, 0, 3, 1], [2, 1, 0, 1, 2, 0],
+        // --- Fewer stepwise-only (kept for variety but outnumbered by mature contours)
+        [0, 2, 4, 2, 0], [0, 2, 3, 2, 0], [1, 2, 3, 4, 3, 2, 1], [0, 1, 2, 1, 0], [3, 2, 3, 2, 1, 0],
+        [0, 1, 2, 2, 1, 0], [0, 3, 2, 1, 0], [2, 0, 2, 3, 2, 0], [0, 1, 2, 3, 2, 1], [0, 2, 1, 0, 2, 0],
+        [2, 3, 4, 3, 2, 1], [0, 2, 1, 2, 0], [1, 2, 1, 0, 1, 2], [3, 2, 1, 0, 0, 1], [2, 1, 0, 2, 0, 1]
     ];
 
     // --- MELODY RHYTHM PROFILES: per-track variety so not every song uses same note lengths (lo-fi knowledge).
@@ -1146,23 +1154,23 @@
         { name: 'Minimal', lead: ['4n','2n','4n','2n'], bell: ['4n','2n','4n'], leadStepMod: 1, bellStepMod: 1 }
     ];
 
-    // --- LOFI HIP-HOP STYLES. BPM 68-98, swing for groove, bit-crush for lo-fi color.
+    // --- LOFI HIP-HOP STYLES. BPM 68-98, swing for groove (0.04–0.07 = audible triplet feel), bit-crush for lo-fi color.
     const STYLES = {
-        'Chill Hop': { bpmRange: [80, 92], swing: 0.02, drumDensity: 0.65, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
-        'Classic': { bpmRange: [72, 85], swing: 0.018, drumDensity: 0.5, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
-        'Sleepy': { bpmRange: [65, 75], swing: 0.012, drumDensity: 0.3, bitCrush: 6, hasLead: false, isGuitar: false, color: '#5b7c99' },
-        'Jazzy': { bpmRange: [75, 90], swing: 0.025, drumDensity: 0.55, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
-        'Minimal': { bpmRange: [70, 82], swing: 0.01, drumDensity: 0.35, bitCrush: 5, hasLead: false, isGuitar: false, color: '#6b7280' },
-        'Study': { bpmRange: [76, 88], swing: 0.015, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
-        'Twilight': { bpmRange: [72, 84], swing: 0.015, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#7c8ba3' },
-        'Rainy': { bpmRange: [70, 82], swing: 0.014, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#6b8cae' },
-        'Vintage': { bpmRange: [74, 86], swing: 0.02, drumDensity: 0.5, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c9a959' },
-        'Neo-Soul': { bpmRange: [78, 92], swing: 0.025, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
-        'Soft': { bpmRange: [70, 80], swing: 0.012, drumDensity: 0.35, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
-        'Warm': { bpmRange: [76, 90], swing: 0.018, drumDensity: 0.55, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
-        'Mellow': { bpmRange: [72, 84], swing: 0.016, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
-        'Cozy': { bpmRange: [68, 80], swing: 0.015, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#8b7355' },
-        'Sunrise': { bpmRange: [76, 88], swing: 0.016, drumDensity: 0.45, bitCrush: 3, hasLead: true, isGuitar: false, color: '#f4a261' }
+        'Chill Hop': { bpmRange: [80, 92], swing: 0.055, drumDensity: 0.65, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
+        'Classic': { bpmRange: [72, 85], swing: 0.05, drumDensity: 0.5, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
+        'Sleepy': { bpmRange: [65, 75], swing: 0.04, drumDensity: 0.3, bitCrush: 6, hasLead: false, isGuitar: false, color: '#5b7c99' },
+        'Jazzy': { bpmRange: [75, 90], swing: 0.065, drumDensity: 0.55, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
+        'Minimal': { bpmRange: [70, 82], swing: 0.042, drumDensity: 0.35, bitCrush: 5, hasLead: false, isGuitar: false, color: '#6b7280' },
+        'Study': { bpmRange: [76, 88], swing: 0.05, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
+        'Twilight': { bpmRange: [72, 84], swing: 0.048, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#7c8ba3' },
+        'Rainy': { bpmRange: [70, 82], swing: 0.046, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#6b8cae' },
+        'Vintage': { bpmRange: [74, 86], swing: 0.055, drumDensity: 0.5, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c9a959' },
+        'Neo-Soul': { bpmRange: [78, 92], swing: 0.068, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
+        'Soft': { bpmRange: [70, 80], swing: 0.044, drumDensity: 0.35, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
+        'Warm': { bpmRange: [76, 90], swing: 0.052, drumDensity: 0.55, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
+        'Mellow': { bpmRange: [72, 84], swing: 0.05, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
+        'Cozy': { bpmRange: [68, 80], swing: 0.048, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#8b7355' },
+        'Sunrise': { bpmRange: [76, 88], swing: 0.05, drumDensity: 0.45, bitCrush: 3, hasLead: true, isGuitar: false, color: '#f4a261' }
     };
 
     // --- LOFI SOUND BANKS (10x variation). Keys, pad, bass, lead, effects, drums — hit tones only.
@@ -1331,6 +1339,7 @@
         mode: 'Minor',
         scale: [],
         progression: [],
+        breakdownChordDegree: 1,
         bpm: 75,
         barCount: 0,
         section: 'Verse',
@@ -1369,7 +1378,7 @@
 
     // Nodes
     let radioGroup, stopClick; 
-    let keys, pad, bass, lead, accordion, bells, kick, snare, hihat, foley, guitar, fillArp;
+    let keys, pad, bass, lead, accordion, bells, kick, snare, hihat, foley, guitar, fillArp, guitarBodyFilter;
     let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter, masterHighPass, bassSubCut, masterCompressor, softClipper, clarityEQ;
     let mobilePresenceFilter = null; // Optional: mobile-only presence boost (inserted in chain when isMobile())
     let vinylNoise, rainNoise, windNoise, fireNoise, tapeNoise, filterLFO, padVolumeLFO, analyser;
@@ -1701,7 +1710,8 @@
         };
 
         // Mastering chain: consistent level and clarity (trim → clipper → limiter → destination)
-        limiter = new Tone.Limiter(-1).connect(radioGroup); // -1 dB ceiling — enough headroom without sounding quiet
+        // Lower ceiling and trim reduce overload when many instruments play — prevents croaking and cracks
+        limiter = new Tone.Limiter(-2).connect(radioGroup); // -2 dB ceiling — headroom for transients, still punchy
         const softClipCurve = (() => {
             const n = 256;
             const curve = new Float32Array(n);
@@ -1711,12 +1721,12 @@
             }
             return curve;
         })();
-        const masterTrim = new Tone.Gain(0.98).connect(limiter); // Near unity — full audibility without clipping
+        const masterTrim = new Tone.Gain(0.88).connect(limiter); // Balanced headroom — loud enough, less overload/croaking
         softClipper = new Tone.WaveShaper(softClipCurve).connect(masterTrim);
-        masterCompressor = new Tone.Compressor(-18, 2).connect(softClipper); // Light glue — consistent level, less pump
-        masterCompressor.attack.value = 0.01;
-        masterCompressor.release.value = 0.25;
-        masterCompressor.knee.value = 10;
+        masterCompressor = new Tone.Compressor(-14, 1.8).connect(softClipper); // Slightly higher threshold, lower ratio — less pump, smoother
+        masterCompressor.attack.value = 0.02;
+        masterCompressor.release.value = 0.35;
+        masterCompressor.knee.value = 12;
         // Clarity EQ: +2 dB presence so piano and melody cut through on any device
         clarityEQ = new Tone.Filter(2500, 'highshelf', -12);
         clarityEQ.gain.value = 2;
@@ -1725,29 +1735,29 @@
 
         if (isMobile()) {
             masterHighPass.frequency.value = 55;        // Slightly less sub on small speakers
-            limiter.threshold.value = -1.5;            // Slight extra headroom, still loud enough to hear
+            limiter.threshold.value = -3;              // Extra headroom on small speakers to avoid cracks
             mobilePresenceFilter = new Tone.Filter(2400, 'highshelf', -12);
             mobilePresenceFilter.gain.value = 2;       // +2 dB presence on phones
             masterCompressor.disconnect(softClipper);
             masterCompressor.connect(mobilePresenceFilter);
             mobilePresenceFilter.connect(softClipper);
         }
-        // Multiband: lighter compression so level stays consistent when many instruments play
+        // Multiband: lighter compression — higher thresholds reduce pumping/croaking when many instruments hit at once
         compressor = new Tone.MultibandCompressor({
             lowFrequency: 180,
             highFrequency: 2200,
-            low:  { threshold: -14, ratio: 2.5, attack: 0.015, release: 0.2 },
-            mid:  { threshold: -16, ratio: 2, attack: 0.008, release: 0.25 },
-            high: { threshold: -14, ratio: 2, attack: 0.005, release: 0.2 }
+            low:  { threshold: -10, ratio: 2, attack: 0.02, release: 0.28 },
+            mid:  { threshold: -12, ratio: 1.8, attack: 0.012, release: 0.3 },
+            high: { threshold: -10, ratio: 1.8, attack: 0.008, release: 0.25 }
         }).connect(masterHighPass);
         masterFilter = new Tone.Filter(3200, "lowpass").connect(compressor);
         filterLFO = new Tone.LFO(0.05, 2800, 7500).start(); // Start with open filter — never close below 2.6k (clamped per-track)
         filterLFO.connect(masterFilter.frequency);
         
-        reverb = new Tone.JCReverb(0.22).connect(masterFilter); // Slightly drier — less buildup when many instruments play, reduces distortion
-        delay = new Tone.PingPongDelay("8n", 0.1).connect(reverb);
+        reverb = new Tone.JCReverb(0.17).connect(masterFilter); // Drier — less buildup when many instruments play, reduces croaking
+        delay = new Tone.PingPongDelay("8n", 0.08).connect(reverb);
         chorus = new Tone.Chorus(2, 2.5, 0.5).connect(delay).start(); 
-        bitCrusher = new Tone.BitCrusher(14).connect(chorus); // 14-bit: warm lo-fi, less harsh than 12-bit when mix is dense
+        bitCrusher = new Tone.BitCrusher(16).connect(chorus); // 16-bit: less grit stacking, fewer harsh peaks that can crack
 
         autoPanner = new Tone.AutoPanner("1m").start().connect(delay); // Very slow panning — gentle stereo width
         tremolo = new Tone.Tremolo(1.5, 0.15).start().connect(bitCrusher); // Slow, subtle amplitude shimmer
@@ -1768,10 +1778,12 @@
             modulation: { type: "sine" },
             modulationEnvelope: { attack: 0.002, decay: 0.25, sustain: 0, release: 0.4 }
         });
+        if (keys.maxPolyphony !== undefined) keys.maxPolyphony = 12;
         keys.connect(compressor);  // DRY path — piano heard directly, no reverb eating it
         keys.connect(new Tone.Gain(0.3).connect(pianoReverbSend)); // WET send — quiet reverb for space
-        // Pad: very quiet background only — NOT a drone, just occasional warmth
+        // Pad: very quiet background only — NOT a drone, just occasional warmth (limited voices = less buildup)
         pad = new Tone.PolySynth(Tone.Synth, { volume: -34, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.15, release: 1.0 } }).connect(reverb);
+        if (pad.maxPolyphony !== undefined) pad.maxPolyphony = 6;
         padVolumeLFO = new Tone.LFO(0.06, -40, -32).start(); // Pad very quiet — subtle background only
         padVolumeLFO.connect(pad.volume);
 
@@ -1802,14 +1814,17 @@
             modulation: { type: "sine" },
             modulationEnvelope: { attack: 0.1, decay: 0.3, sustain: 0.25, release: 0.6 }
         }).connect(tremolo);
+        if (accordion.maxPolyphony !== undefined) accordion.maxPolyphony = 8;
 
-        // Guitar — lo-fi plucky fills when piano is silent
+        // Guitar — acoustic/nylon-like: warm body, soft attack, string decay (not metallic pluck)
+        guitarBodyFilter = new Tone.Filter(2600, 'lowpass', -12).connect(reverb);
         guitar = new Tone.PluckSynth({
-            volume: -22,
-            attackNoise: 0.8,
-            dampening: 3200,
-            resonance: 0.85
-        }).connect(reverb);
+            volume: -20,
+            attackNoise: 0.35,   // Softer pick attack (was 0.8 = harsh)
+            dampening: 1400,     // Darker string decay = body (was 3200 = bright/metallic)
+            resonance: 0.94,    // More body resonance
+            release: 0.55       // String-like ring-out
+        }).connect(guitarBodyFilter);
 
         // Fill Arp — soft arpeggiated layer when piano rests
         fillArp = new Tone.PluckSynth({
@@ -1991,7 +2006,8 @@
         const availableModes = MOOD_SCALES[state.mood];
         state.mode = availableModes[Math.floor(currentRNG() * availableModes.length)];
         state.scale = generateScale(state.key, state.mode);
-        state.progression = generateProgression(state.mode);
+        state.progression = generateProgression(state.mode, state.mood);
+        state.breakdownChordDegree = state.progression[0];  // Section-specific: breakdown holds one chord
         
         let bpm = config.bpmRange[0] + Math.floor(currentRNG() * (config.bpmRange[1] - config.bpmRange[0]));
         if (state.mood === 'Uplifting' || state.mood === 'Groovy') bpm += 4;
@@ -2008,17 +2024,23 @@
         const drumKey = drumKeys[Math.floor(currentRNG() * drumKeys.length)];
         state.drumPattern = [...DRUM_LOOPS[drumKey]];
         
-        // 2. Motif from famous hook contours (scale degrees -> notes)
+        // 2. Motif from hook contours (scale degrees 0–6, 7 = root up octave). Octave placement for drama.
         const contour = MOTIF_CONTOURS[Math.floor(currentRNG() * MOTIF_CONTOURS.length)];
         const baseOctave = 4;
-        state.trackMotif = contour.map((deg, i) => {
-            const idx = Math.max(0, Math.min(deg, 6)) % 7;
-            const octave = baseOctave + (deg >= 4 && currentRNG() > 0.5 ? 1 : 0);
+        state.trackMotif = contour.map((deg) => {
+            const safeDeg = Math.max(0, Math.min(deg, 7));
+            const idx = safeDeg === 7 ? 0 : safeDeg % 7;
+            const octave = safeDeg === 7 ? baseOctave + 1 : baseOctave + (safeDeg >= 5 && currentRNG() > 0.4 ? 1 : 0);
             return state.scale[idx] + octave;
         });
 
-        // 3. Bass: only famous patterns
-        const bassKeys = Object.keys(BASS_PATTERNS);
+        // 3. Bass: style-consistent with drums (kick–bass lock) when we have a pair, else any pattern
+        let bassKeys = Object.keys(BASS_PATTERNS);
+        const paired = DRUM_BASS_PAIRS[drumKey];
+        if (paired && paired.length > 0 && currentRNG() < 0.72) {
+            const available = paired.filter(k => BASS_PATTERNS[k]);
+            if (available.length > 0) bassKeys = available;
+        }
         const bassKey = bassKeys[Math.floor(currentRNG() * bassKeys.length)];
         state.bassPattern = [...BASS_PATTERNS[bassKey]];
 
@@ -2330,12 +2352,21 @@
         } catch(e) { return chordNotes; }
     }
     
-    function generateProgression(mode) {
+    function generateProgression(mode, mood) {
         const isMajor = mode === 'Major' || mode === 'Lydian' || mode === 'Mixolydian';
-        const pool = isMajor ? FAMOUS_PROGRESSIONS.major : FAMOUS_PROGRESSIONS.minor;
+        let pool = isMajor ? FAMOUS_PROGRESSIONS.major : FAMOUS_PROGRESSIONS.minor;
         if (mode === 'Mixolydian') {
             const mixo = [[1, 7, 4, 1], [1, 4, 1, 7], [1, 4, 7, 1]];
             return mixo[Math.floor(currentRNG() * mixo.length)];
+        }
+        // Mood-aware: Chill/Dreamy prefer soulful minor progressions (contain 6 or 7, start on 1 or 6)
+        if (mood && (mood === 'Chill' || mood === 'Dreamy') && !isMajor) {
+            const soulful = pool.filter(prog => (prog[0] === 1 || prog[0] === 6) && prog.some(d => d === 6 || d === 7));
+            if (soulful.length > 0 && currentRNG() < 0.7) pool = soulful;
+        }
+        if (mood && mood === 'Uplifting' && isMajor) {
+            const release = pool.filter(prog => prog.indexOf(4) >= 0 && prog.indexOf(5) >= 0);
+            if (release.length > 0 && currentRNG() < 0.5) pool = release;
         }
         return pool[Math.floor(currentRNG() * pool.length)];
     }
@@ -2355,9 +2386,9 @@
             const sixteenth = step % 4; 
             const config = STYLES[state.style];
 
-            // Humanized timing: swing + subtle micro-timing variation
+            // Humanized timing: audible swing (off-beat delay) + per-hit micro-timing for human feel
             const swingOffset = state.params.swing * (sixteenth % 2 === 1 ? 1 : 0);
-            const humanize = (seqRNG() - 0.5) * 0.005;
+            const humanize = (seqRNG() - 0.5) * 0.024;  // ±12ms — actually audible groove
             const t = time + swingOffset + humanize;
 
             // Section awareness for layering
@@ -2367,9 +2398,9 @@
             const isClimax = state.section === 'Climax';
             const isBreakdown = state.section === 'Breakdown';
 
-            // Current chord with voice leading for smooth transitions (octave 4 for piano register)
+            // Current chord with voice leading. Breakdown = single chord (harmonic strip-down).
             const progIdx = state.barCount % 4;
-            const degree = state.progression[progIdx];
+            const degree = isBreakdown ? (state.breakdownChordDegree ?? state.progression[0]) : state.progression[progIdx];
             const rawNotes = getChord(degree, state.scale, 4, state.useSeventh);
             const notes = voiceLead(rawNotes, state.lastChordVoicing);
 
@@ -2508,7 +2539,7 @@
                     } else if (bpVal === 5) {
                         bassNote = bassChord[2];
                     } else if (bpVal === 7) {
-                        const nextDeg = state.progression[(state.barCount + 1) % 4];
+                        const nextDeg = isBreakdown ? (state.breakdownChordDegree ?? state.progression[0]) : state.progression[(state.barCount + 1) % 4];
                         const nextChord = getChord(nextDeg, state.scale, 3, false);
                         bassNote = nextChord[0];
                     }
@@ -2521,22 +2552,32 @@
                 }
             }
 
-            // ─── LEAD MELODY ─── (whisper-quiet — ambient color from chord tones; rhythm varies per track)
+            // ─── LEAD MELODY ─── Audible hook: higher probability and velocity so melody reads as a line
             if (config.hasLead && !isIntro && !isBreakdown) {
-                const leadProb = isClimax ? 0.22 : isChorus ? 0.08 : (isVerse ? 0.02 : 0);
+                const leadProb = isClimax ? 0.38 : isChorus ? 0.2 : (isVerse ? 0.08 : 0);
                 const stepMod = state.leadStepMod || 0;
                 const allowStep = (stepMod === 0 && step % 8 === 0) || (stepMod === 1 && step % 8 === 0 && (step + state.barCount) % 2 === 0) || (stepMod === 2 && step % 16 === 0);
                 if (leadProb > 0 && seqRNG() < leadProb && allowStep) {
                     const leadChord = getChord(degree, state.scale, 5, state.useSeventh);
                     const motifIdx = (Math.floor(step / 8) + state.barCount) % (state.trackMotif.length || 8);
                     let leadNote;
-                    if (seqRNG() < 0.7) {
-                        leadNote = leadChord[motifIdx % leadChord.length];
-                    } else if (state.trackMotif[motifIdx]) {
+                    if (state.trackMotif[motifIdx] && seqRNG() < 0.58) {
                         leadNote = state.trackMotif[motifIdx];
+                    } else {
+                        leadNote = leadChord[motifIdx % leadChord.length];
+                        if (seqRNG() < 0.12 && state.scale.length >= 7) {
+                            const noteName = leadNote.replace(/\d/g, '');
+                            const scaleIdx = state.scale.indexOf(noteName);
+                            if (scaleIdx >= 0) {
+                                const neighborIdx = (scaleIdx + (seqRNG() < 0.5 ? 1 : -1) + 7) % 7;
+                                const oct = leadNote.match(/\d+/);
+                                const octave = oct ? parseInt(oct[0], 10) : 5;
+                                leadNote = state.scale[neighborIdx] + octave;
+                            }
+                        }
                     }
                     if (leadNote) {
-                        const leadVel = isClimax ? (0.1 + seqRNG() * 0.06) : isChorus ? (0.06 + seqRNG() * 0.04) : (0.04 + seqRNG() * 0.03);
+                        const leadVel = isClimax ? (0.22 + seqRNG() * 0.1) : isChorus ? (0.14 + seqRNG() * 0.08) : (0.1 + seqRNG() * 0.05);
                         const leadDur = state.leadDurations[Math.floor(seqRNG() * state.leadDurations.length)];
                         lead.triggerAttackRelease(leadNote, leadDur, t, leadVel);
                     }
@@ -2757,7 +2798,7 @@
             hideCanvas(); // Pause canvas video
         } else {
             if(Tone.context.state !== 'running') await Tone.start();
-            radioGroup.gain.value = 1; 
+            radioGroup.gain.rampTo(1, 0.08); // Short ramp avoids pop/crack on resume
             state.isPlaying = true;
             Tone.Transport.start();
             vinylNoise.start(); rainNoise.start(); windNoise.start(); fireNoise.start(); tapeNoise.start();
