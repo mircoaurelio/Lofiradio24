@@ -1709,9 +1709,9 @@
             return !!(touch || narrow);
         };
 
-        // Mastering chain: consistent level and clarity (trim → clipper → limiter → destination)
-        // Lower ceiling and trim reduce overload when many instruments play — prevents croaking and cracks
-        limiter = new Tone.Limiter(-2).connect(radioGroup); // -2 dB ceiling — headroom for transients, still punchy
+        // Mastering chain: headroom-first so dense sections (many instruments) don't overload or distort
+        // Limiter: -3.5 dB ceiling so it rarely grabs; trim keeps sum under control when everything plays
+        limiter = new Tone.Limiter(-3.5).connect(radioGroup);
         const softClipCurve = (() => {
             const n = 256;
             const curve = new Float32Array(n);
@@ -1721,40 +1721,42 @@
             }
             return curve;
         })();
-        const masterTrim = new Tone.Gain(0.88).connect(limiter); // Balanced headroom — loud enough, less overload/croaking
+        const masterTrim = new Tone.Gain(0.6).connect(limiter); // Lower trim = safe headroom when piano+bass+drums+lead+accordion+bells+reverb all hit
         softClipper = new Tone.WaveShaper(softClipCurve).connect(masterTrim);
-        masterCompressor = new Tone.Compressor(-14, 1.8).connect(softClipper); // Slightly higher threshold, lower ratio — less pump, smoother
-        masterCompressor.attack.value = 0.02;
-        masterCompressor.release.value = 0.35;
-        masterCompressor.knee.value = 12;
-        // Clarity EQ: +2 dB presence so piano and melody cut through on any device
+        masterCompressor = new Tone.Compressor(-8, 1.4).connect(softClipper); // High threshold, gentle ratio — no squashing on dense passages
+        masterCompressor.attack.value = 0.025;
+        masterCompressor.release.value = 0.4;
+        masterCompressor.knee.value = 18;
+        // Clarity EQ: mild presence boost so dense mixes don't get harsh when many instruments stack
         clarityEQ = new Tone.Filter(2500, 'highshelf', -12);
-        clarityEQ.gain.value = 2;
+        clarityEQ.gain.value = 1.2;
         clarityEQ.connect(masterCompressor);
         masterHighPass = new Tone.Filter(38, "highpass", -24).connect(clarityEQ); // Remove sub rumble
 
         if (isMobile()) {
             masterHighPass.frequency.value = 55;        // Slightly less sub on small speakers
-            limiter.threshold.value = -3;              // Extra headroom on small speakers to avoid cracks
+            limiter.threshold.value = -4;               // Extra headroom on small speakers to avoid cracks
             mobilePresenceFilter = new Tone.Filter(2400, 'highshelf', -12);
             mobilePresenceFilter.gain.value = 2;       // +2 dB presence on phones
             masterCompressor.disconnect(softClipper);
             masterCompressor.connect(mobilePresenceFilter);
             mobilePresenceFilter.connect(softClipper);
         }
-        // Multiband: lighter compression — higher thresholds reduce pumping/croaking when many instruments hit at once
+        // Multiband: high thresholds + low ratios — only gentle glue, no pump when many instruments play
         compressor = new Tone.MultibandCompressor({
             lowFrequency: 180,
             highFrequency: 2200,
-            low:  { threshold: -10, ratio: 2, attack: 0.02, release: 0.28 },
-            mid:  { threshold: -12, ratio: 1.8, attack: 0.012, release: 0.3 },
-            high: { threshold: -10, ratio: 1.8, attack: 0.008, release: 0.25 }
+            low:  { threshold: -5, ratio: 1.4, attack: 0.03, release: 0.35 },
+            mid:  { threshold: -7, ratio: 1.35, attack: 0.02, release: 0.38 },
+            high: { threshold: -5, ratio: 1.35, attack: 0.015, release: 0.32 }
         }).connect(masterHighPass);
         masterFilter = new Tone.Filter(3200, "lowpass").connect(compressor);
         filterLFO = new Tone.LFO(0.05, 2800, 7500).start(); // Start with open filter — never close below 2.6k (clamped per-track)
         filterLFO.connect(masterFilter.frequency);
         
-        reverb = new Tone.JCReverb(0.17).connect(masterFilter); // Drier — less buildup when many instruments play, reduces croaking
+        // Effect bus: trim level into reverb so dense sections don't overload the master
+        const reverbInputGain = new Tone.Gain(0.82).connect(masterFilter);
+        reverb = new Tone.JCReverb(0.17).connect(reverbInputGain); // Drier — less buildup when many instruments play
         delay = new Tone.PingPongDelay("8n", 0.08).connect(reverb);
         chorus = new Tone.Chorus(2, 2.5, 0.5).connect(delay).start(); 
         bitCrusher = new Tone.BitCrusher(16).connect(chorus); // 16-bit: less grit stacking, fewer harsh peaks that can crack
@@ -1780,7 +1782,7 @@
         });
         if (keys.maxPolyphony !== undefined) keys.maxPolyphony = 12;
         keys.connect(compressor);  // DRY path — piano heard directly, no reverb eating it
-        keys.connect(new Tone.Gain(0.3).connect(pianoReverbSend)); // WET send — quiet reverb for space
+        keys.connect(new Tone.Gain(0.24).connect(pianoReverbSend)); // WET send — moderate so dense sections don't overload
         // Pad: very quiet background only — NOT a drone, just occasional warmth (limited voices = less buildup)
         pad = new Tone.PolySynth(Tone.Synth, { volume: -34, oscillator: { type: "sine" }, envelope: { attack: 1.2, decay: 0.6, sustain: 0.15, release: 1.0 } }).connect(reverb);
         if (pad.maxPolyphony !== undefined) pad.maxPolyphony = 6;
