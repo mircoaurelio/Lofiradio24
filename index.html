@@ -1373,13 +1373,19 @@
         leadDurations: ['8n','4n','8n','16n'],
         bellDurations: ['8n','4n','8n'],
         leadStepMod: 0,
-        bellStepMod: 0
+        bellStepMod: 0,
+        // Within-track variation: section lengths (bars per section), bridge progression, motif transpose
+        sectionLengths: [4, 4, 4, 4],
+        totalCycleBars: 16,
+        bridgeProgression: null,
+        bridgeStartBar: 0,
+        motifTranspose: 0
     };
 
     // Nodes
     let radioGroup, stopClick; 
     let keys, pad, bass, lead, accordion, bells, kick, snare, hihat, foley, guitar, fillArp, guitarBodyFilter;
-    let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter, masterHighPass, bassSubCut, masterCompressor, softClipper, clarityEQ;
+    let masterFilter, chorus, delay, reverb, bitCrusher, compressor, limiter, masterHighPass, bassSubCut, masterCompressor, softClipper, clarityEQ, finalLimiter;
     let mobilePresenceFilter = null; // Optional: mobile-only presence boost (inserted in chain when isMobile())
     let vinylNoise, rainNoise, windNoise, fireNoise, tapeNoise, filterLFO, padVolumeLFO, analyser;
     let autoPanner, tremolo, vibrato;
@@ -1691,7 +1697,9 @@
         }
         keepAliveAudio.play().catch(() => {});
         
-        radioGroup = new Tone.Gain(1).toDestination();
+        // Master output: Gain → final limiter (quality mastering — consistent ceiling, no clipping)
+        finalLimiter = new Tone.Limiter(-1).toDestination();
+        radioGroup = new Tone.Gain(1).connect(finalLimiter);
         
         stopClick = new Tone.MembraneSynth({
             pitchDecay: 0.008,
@@ -1709,8 +1717,8 @@
             return !!(touch || narrow);
         };
 
-        // Mastering chain: headroom-first so dense sections (many instruments) don't overload or distort
-        // Limiter: -3.5 dB ceiling so it rarely grabs; trim keeps sum under control when everything plays
+        // Mastering chain: headroom-first, then final limiter for broadcast-ready level and no clipping
+        // Stage 1: gentle bus compression and soft clip; Stage 2: safety limiter at -1 dB
         limiter = new Tone.Limiter(-3.5).connect(radioGroup);
         const softClipCurve = (() => {
             const n = 256;
@@ -1721,13 +1729,13 @@
             }
             return curve;
         })();
-        const masterTrim = new Tone.Gain(0.6).connect(limiter); // Lower trim = safe headroom when piano+bass+drums+lead+accordion+bells+reverb all hit
+        const masterTrim = new Tone.Gain(0.68).connect(limiter); // Slight boost for consistent level; final limiter catches peaks
         softClipper = new Tone.WaveShaper(softClipCurve).connect(masterTrim);
-        masterCompressor = new Tone.Compressor(-8, 1.4).connect(softClipper); // High threshold, gentle ratio — no squashing on dense passages
+        masterCompressor = new Tone.Compressor(-8, 1.4).connect(softClipper); // Gentle glue — no pump on dense passages
         masterCompressor.attack.value = 0.025;
         masterCompressor.release.value = 0.4;
         masterCompressor.knee.value = 18;
-        // Clarity EQ: mild presence boost so dense mixes don't get harsh when many instruments stack
+        // Clarity EQ: mild presence (1.2) so mixes stay clear when many instruments stack
         clarityEQ = new Tone.Filter(2500, 'highshelf', -12);
         clarityEQ.gain.value = 1.2;
         clarityEQ.connect(masterCompressor);
@@ -2187,6 +2195,31 @@
             ['Chorus','Verse','Climax','Breakdown']
         ];
         state.sectionOrder = SECTION_ORDERS[Math.floor(currentRNG() * SECTION_ORDERS.length)];
+        // Varying section lengths: 4/4/4/4 (default), 4/8/4/4, 4/4/8/4, or 6/4/4/4 so the loop isn't always the same grid
+        const LENGTH_PRESETS = [
+            [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4], [4, 4, 4, 4],
+            [4, 8, 4, 4], [4, 4, 8, 4], [4, 4, 4, 8], [6, 4, 4, 4], [4, 6, 4, 4]
+        ];
+        state.sectionLengths = LENGTH_PRESETS[Math.floor(currentRNG() * LENGTH_PRESETS.length)];
+        state.totalCycleBars = state.sectionLengths.reduce((a, b) => a + b, 0);
+        // Bridge progression: second-half harmonic variation (different 4 chords) so the song isn't same 4 chords throughout
+        const isMajor = state.mode === 'Major' || state.mode === 'Lydian' || state.mode === 'Mixolydian';
+        const progPool = isMajor ? FAMOUS_PROGRESSIONS.major : FAMOUS_PROGRESSIONS.minor;
+        if (currentRNG() < 0.5 && progPool.length > 0) {
+            let bridge = progPool[Math.floor(currentRNG() * progPool.length)];
+            const sameAsMain = bridge && bridge.length === 4 && state.progression.length === 4 && bridge.every((d, i) => d === state.progression[i]);
+            if (!bridge || bridge.length !== 4 || sameAsMain) {
+                const other = progPool.filter(p => p && p.length === 4 && !p.every((d, i) => state.progression[i] === d));
+                bridge = other.length > 0 ? other[Math.floor(currentRNG() * other.length)] : null;
+            }
+            state.bridgeProgression = bridge && bridge.length === 4 ? bridge : null;
+            state.bridgeStartBar = state.bridgeProgression ? (4 + Math.floor(state.totalCycleBars * 0.45)) : 0;
+        } else {
+            state.bridgeProgression = null;
+            state.bridgeStartBar = 0;
+        }
+        // Motif variation: occasional octave transpose every other phrase so the hook isn't identical every cycle
+        state.motifTranspose = currentRNG() < 0.4 ? 12 : 0;
         const ep = EFFECT_PRESETS[effectIdx];
         if (reverb.roomSize !== undefined) reverb.roomSize = ep.reverbDecay;
         if (delay.wet) delay.wet.value = ep.delayWet;
@@ -2380,13 +2413,19 @@
         }
         let step = 0;
         const stepsPerBar = state.stepsPerBar;
-        // Seeded RNG for deterministic sequencer behavior — re-seeded each track for variety
-        let seqRNG = mulberry32(state.currentSeed + 77777);
+        const totalCycleBars = state.totalCycleBars || 16;
 
         Tone.Transport.scheduleRepeat((time) => {
             const patIdx = step % stepsPerBar;
             const sixteenth = step % 4; 
             const config = STYLES[state.style];
+
+            // Non-deterministic variation: unique seed per (phrase, bar-in-cycle, step) so each phrase sounds different
+            const phraseIndex = Math.max(0, Math.floor((state.barCount - 4) / totalCycleBars));
+            const cycleBar = (state.barCount - 4 + totalCycleBars) % totalCycleBars;
+            const stepInPhrase = cycleBar * stepsPerBar + step;
+            const seed = state.currentSeed + 77777 + (phraseIndex * totalCycleBars * stepsPerBar + stepInPhrase) * 31;
+            let seqRNG = mulberry32(seed >>> 0);
 
             // Humanized timing: audible swing (off-beat delay) + per-hit micro-timing for human feel
             const swingOffset = state.params.swing * (sixteenth % 2 === 1 ? 1 : 0);
@@ -2400,9 +2439,11 @@
             const isClimax = state.section === 'Climax';
             const isBreakdown = state.section === 'Breakdown';
 
-            // Current chord with voice leading. Breakdown = single chord (harmonic strip-down).
+            // Current chord: use bridge progression in second half of track for harmonic variation
             const progIdx = state.barCount % 4;
-            const degree = isBreakdown ? (state.breakdownChordDegree ?? state.progression[0]) : state.progression[progIdx];
+            const useBridge = state.bridgeProgression && state.barCount >= state.bridgeStartBar;
+            const progression = useBridge ? state.bridgeProgression : state.progression;
+            const degree = isBreakdown ? (state.breakdownChordDegree ?? state.progression[0]) : progression[progIdx];
             const rawNotes = getChord(degree, state.scale, 4, state.useSeventh);
             const notes = voiceLead(rawNotes, state.lastChordVoicing);
 
@@ -2412,7 +2453,9 @@
                 : (state.pianoUseBarAlternation && state.pianoPatternAlt.length && (state.barCount % 2 === 1)) ? state.pianoPatternAlt
                 : state.pianoPattern;
             const pianoVal = effPattern[patIdx] || 0;
-            const passDensity = pianoVal > 0 && (isBreakdown ? seqRNG() < 0.28 : seqRNG() < (state.pianoDensity || 0.85));
+            // Section-specific piano density: Verse sparser, Chorus/Climax fuller
+            const effectiveDensity = isVerse ? (state.pianoDensity || 0.85) * 0.72 : (state.pianoDensity || 0.85);
+            const passDensity = pianoVal > 0 && (isBreakdown ? seqRNG() < 0.28 : seqRNG() < effectiveDensity);
             const allowPianoInBreakdown = isBreakdown && state.pianoPatternBreakdown && state.pianoPatternBreakdown.length;
             if (pianoVal > 0 && (allowPianoInBreakdown || !isBreakdown) && passDensity) {
                 if (pianoVal === 1) {
@@ -2554,7 +2597,7 @@
                 }
             }
 
-            // ─── LEAD MELODY ─── Audible hook: higher probability and velocity so melody reads as a line
+            // ─── LEAD MELODY ─── Audible hook; motif variation: transpose +12 every other phrase when set
             if (config.hasLead && !isIntro && !isBreakdown) {
                 const leadProb = isClimax ? 0.38 : isChorus ? 0.2 : (isVerse ? 0.08 : 0);
                 const stepMod = state.leadStepMod || 0;
@@ -2579,6 +2622,9 @@
                         }
                     }
                     if (leadNote) {
+                        if (state.motifTranspose && phraseIndex % 2 === 1) {
+                            try { leadNote = Tone.Frequency(leadNote).transpose(state.motifTranspose).toNote(); } catch (e) {}
+                        }
                         const leadVel = isClimax ? (0.22 + seqRNG() * 0.1) : isChorus ? (0.14 + seqRNG() * 0.08) : (0.1 + seqRNG() * 0.05);
                         const leadDur = state.leadDurations[Math.floor(seqRNG() * state.leadDurations.length)];
                         lead.triggerAttackRelease(leadNote, leadDur, t, leadVel);
@@ -2586,7 +2632,7 @@
                 }
             }
 
-            // ─── BELLS / GLOCKENSPIEL ─── Sparse high melody; duration pool and density per track (lo-fi variety)
+            // ─── BELLS / GLOCKENSPIEL ─── Sparse high melody; motif variation: transpose every other phrase
             if (!isIntro && !isBreakdown && (state.bellProb || 0) > 0) {
                 const bellProb = isClimax ? (state.bellProb * 1.4) : isChorus ? (state.bellProb * 1.1) : state.bellProb;
                 const bellStepMod = state.bellStepMod || 0;
@@ -2595,8 +2641,11 @@
                     const bellChord = getChord(degree, state.scale, 5, state.useSeventh);
                     const motifIdx = (Math.floor(step / 4) + state.barCount) % (state.trackMotif.length || 8);
                     const useMotif = seqRNG() < 0.5 && state.trackMotif[motifIdx];
-                    const bellNote = useMotif ? state.trackMotif[motifIdx] : bellChord[Math.floor(seqRNG() * bellChord.length)];
+                    let bellNote = useMotif ? state.trackMotif[motifIdx] : bellChord[Math.floor(seqRNG() * bellChord.length)];
                     if (bellNote) {
+                        if (state.motifTranspose && phraseIndex % 2 === 1) {
+                            try { bellNote = Tone.Frequency(bellNote).transpose(state.motifTranspose).toNote(); } catch (e) {}
+                        }
                         const bellVel = isClimax ? (0.18 + seqRNG() * 0.08) : isChorus ? (0.14 + seqRNG() * 0.06) : (0.1 + seqRNG() * 0.05);
                         const bellDurs = state.bellDurations || state.leadDurations || ['8n'];
                         const bellDur = bellDurs[Math.floor(seqRNG() * bellDurs.length)];
@@ -2605,7 +2654,7 @@
                 }
             }
 
-            // ─── DRUMS ─── Dynamic hip-hop groove with velocity accents and fills
+            // ─── DRUMS ─── Section-specific: Verse = sparser snare, Chorus/Climax = full, Breakdown = stripped (handled below)
             if (!isIntro && !isBreakdown) {
                 // --- KICK --- Velocity accents: beat 1 is louder, chorus hits harder, climax peaks
                 if (state.drumPattern[patIdx] === 1) {
@@ -2619,8 +2668,10 @@
                     kick.triggerAttackRelease("C1", "16n", t, 0.12 + seqRNG() * 0.08);
                 }
 
-                // --- SNARE --- Accented on main hits, ghost snares for shuffle; climax hits harder
-                if (state.drumPattern[patIdx] === 2) {
+                // --- SNARE --- Verse: mask ~45% of snares for sparser feel; Chorus/Climax: full backbeat
+                const snareSlot = state.drumPattern[patIdx] === 2;
+                const verseSnareMask = isVerse && seqRNG() < 0.45; // Skip some snares in verse
+                if (snareSlot && !verseSnareMask) {
                     const snareAccent = (patIdx === 4 || patIdx === Math.floor(stepsPerBar * 0.75)) ? 0.1 : 0; // Backbeat accent
                     const climaxBoost = isClimax ? 0.12 : 0;
                     const snareVel = Math.min(0.95, 0.55 + seqRNG() * 0.2 + snareAccent + climaxBoost);
@@ -2684,8 +2735,8 @@
                     snare.triggerAttackRelease("16n", t, 0.1 + seqRNG() * 0.06);
                 }
                 // Filtered, darker hi-hats — lower frequency, sparse
-                const cycleBar = (state.barCount - 4) % 16;
-                const barInSection = cycleBar % 4;
+                const cycleBarBreakdown = (state.barCount - 4) % totalCycleBars;
+                const barInSection = cycleBarBreakdown % 4;
                 const isLastBarOfBreakdown = barInSection === 3;
                 const hhProb = isLastBarOfBreakdown ? 0.65 : 0.4; // Build: more hats in last bar
                 if (step % 4 === 0 && seqRNG() < hhProb) {
@@ -2706,14 +2757,21 @@
             step = (step + 1) % stepsPerBar;
             if (step === 0) {
                 state.barCount++;
-                // Song structure: Intro(4) → [Verse(4) → Chorus(4) → Climax(4) → Breakdown(4)] cycle
+                // Song structure: Intro(4) → [sections with variable lengths] cycle
                 if (state.barCount < 4) {
                     state.section = 'Intro';
                 } else {
-                    const cycleBar = (state.barCount - 4) % 16;
+                    const cycleBar = (state.barCount - 4) % totalCycleBars;
                     const order = state.sectionOrder || ['Verse','Chorus','Climax','Breakdown'];
-                    const idx = Math.floor(cycleBar / 4) % order.length;
-                    state.section = order[idx];
+                    const lengths = state.sectionLengths || [4, 4, 4, 4];
+                    let acc = 0;
+                    for (let i = 0; i < order.length; i++) {
+                        if (cycleBar < acc + lengths[i]) {
+                            state.section = order[i];
+                            break;
+                        }
+                        acc += lengths[i];
+                    }
                 }
             }
         }, "16n");
