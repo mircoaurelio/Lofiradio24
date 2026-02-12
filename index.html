@@ -1096,7 +1096,7 @@
             [4, 5, 6, 2], [1, 5, 2, 1], [7, 4, 6, 5], [6, 4, 1, 3], [1, 4, 3, 5], [4, 6, 5, 6], [1, 6, 5, 2], [2, 5, 4, 1]
         ]
     };
-    // --- LOFI HOOK CONTOURS ONLY (~90). Scale degrees 0..6. Simple, catchy, repetitive with variation.
+    // --- LOFI HOOK CONTOURS. Scale degrees 0..6. Emotional variety: longing, hopeful, melancholic, nostalgic.
     const MOTIF_CONTOURS = [
         [0, 1, 2, 3, 2, 1, 0], [0, 2, 0, 2, 3, 2, 0], [1, 1, 2, 2, 3, 2, 1, 0], [0, 1, 2, 3, 3, 2, 1], [2, 1, 0, 1, 2, 3, 2],
         [0, 2, 4, 2, 0], [3, 2, 1, 0, 1, 2], [0, 0, 2, 3, 2, 0], [1, 2, 3, 4, 3, 2, 1], [0, 1, 0, 2, 0, 1, 0],
@@ -1120,7 +1120,29 @@
         [0, 0, 1, 2, 0, 1, 0], [1, 1, 2, 3, 2, 0], [0, 2, 3, 1, 2, 0], [2, 1, 0, 1, 2, 0], [0, 1, 0, 2, 0, 1, 2],
         [1, 2, 1, 0, 0, 1, 0], [0, 3, 1, 2, 1, 0], [1, 0, 1, 2, 0, 2, 0], [0, 2, 1, 2, 0, 0], [2, 3, 2, 0, 1, 0],
         [0, 1, 2, 0, 0, 1, 0], [1, 2, 2, 0, 1, 0], [0, 0, 2, 1, 0, 2, 0], [1, 0, 2, 1, 2, 0], [0, 2, 0, 1, 2, 1, 0],
-        [1, 1, 0, 1, 0, 2, 0], [0, 1, 3, 2, 1, 0], [2, 0, 0, 1, 2, 0], [0, 1, 2, 1, 0, 0, 1], [1, 2, 0, 1, 0, 1, 0]
+        [1, 1, 0, 1, 0, 2, 0], [0, 1, 3, 2, 1, 0], [2, 0, 0, 1, 2, 0], [0, 1, 2, 1, 0, 0, 1], [1, 2, 0, 1, 0, 1, 0],
+        // --- Emotional / lo-fi character contours (longing, hopeful, melancholic, nostalgic)
+        [5, 4, 3, 2, 1, 0], [5, 5, 4, 3, 2, 1], [4, 3, 2, 1, 0, 1], [0, 1, 2, 3, 4, 3], [1, 2, 3, 4, 3, 2, 1],
+        [3, 2, 1, 0, 1, 2], [1, 0, 1, 2, 1, 0], [2, 1, 0, 1, 0], [4, 4, 3, 2, 1, 0], [0, 1, 2, 2, 1, 0, 0],
+        [6, 5, 4, 3, 2, 1], [1, 2, 3, 2, 1, 0, 1], [0, 2, 1, 0, 2, 1], [3, 3, 2, 1, 0], [2, 1, 2, 1, 0, 1]
+    ];
+
+    // --- MELODY RHYTHM PROFILES: per-track variety so not every song uses same note lengths (lo-fi knowledge).
+    // Each profile = { lead: duration pool, bell: duration pool, leadStepMod: step filter for when lead can play, bellStepMod: for bells }
+    // leadStepMod/bellStepMod: 0 = every eligible step, 1 = half the steps (sparser), 2 = only on specific beats (e.g. 4 or 8)
+    const MELODY_RHYTHM_PROFILES = [
+        { name: 'Sustained', lead: ['2n','2n','1n','4n','2n','4n'], bell: ['2n','4n','4n','2n'], leadStepMod: 1, bellStepMod: 1 },
+        { name: 'Syncopated', lead: ['4n','8n','8n.','16n','8n','4n'], bell: ['8n','8n.','16n','4n'], leadStepMod: 0, bellStepMod: 0 },
+        { name: 'Grounded', lead: ['4n','4n','4n','8n','2n','4n'], bell: ['4n','8n','4n','8n'], leadStepMod: 0, bellStepMod: 1 },
+        { name: 'Breathy', lead: ['16n','8n','8n','16n','8n'], bell: ['8n','16n','8n','16n'], leadStepMod: 1, bellStepMod: 1 },
+        { name: 'Lyrical', lead: ['8n','4n','8n','8n','4n','2n','8n'], bell: ['4n','8n','4n','8n','2n'], leadStepMod: 0, bellStepMod: 0 },
+        { name: 'Longing', lead: ['2n','1n','2n','4n','2n'], bell: ['2n','4n','2n','4n'], leadStepMod: 1, bellStepMod: 1 },
+        { name: 'Sparkle', lead: ['8n','16n','8n','4n','16n'], bell: ['16n','8n','16n','8n','8n'], leadStepMod: 0, bellStepMod: 0 },
+        { name: 'Nostalgic', lead: ['4n','4n.','8n','4n','2n'], bell: ['4n','8n','4n','2n'], leadStepMod: 0, bellStepMod: 1 },
+        { name: 'Dreamy', lead: ['2n','4n','2n','4n','1n'], bell: ['2n','2n','4n','4n'], leadStepMod: 1, bellStepMod: 1 },
+        { name: 'Hopeful', lead: ['8n','8n','4n','4n','8n','2n'], bell: ['8n','4n','8n','4n'], leadStepMod: 0, bellStepMod: 0 },
+        { name: 'Melancholic', lead: ['4n','2n','4n','8n','2n','4n'], bell: ['2n','4n','4n','8n'], leadStepMod: 1, bellStepMod: 0 },
+        { name: 'Minimal', lead: ['4n','2n','4n','2n'], bell: ['4n','2n','4n'], leadStepMod: 1, bellStepMod: 1 }
     ];
 
     // --- LOFI HIP-HOP STYLES. BPM 68-98, swing for groove, bit-crush for lo-fi color.
@@ -1338,7 +1360,10 @@
         pianoOctaveDurations: ['4n','8n','4n'],
         accordionChordDurations: ['2n','2n','1n','4n'],
         accordionArpDurations: ['4n','8n','4n','16n'],
-        leadDurations: ['8n','4n','8n','16n']
+        leadDurations: ['8n','4n','8n','16n'],
+        bellDurations: ['8n','4n','8n'],
+        leadStepMod: 0,
+        bellStepMod: 0
     };
 
     // Nodes
@@ -1674,8 +1699,8 @@
             return !!(touch || narrow);
         };
 
-        // Mastering chain: prevent clipping and glue the mix (order: trim → clipper → limiter → destination)
-        limiter = new Tone.Limiter(-2.5).connect(radioGroup); // Lower ceiling to avoid distortion and gracchii
+        // Mastering chain: consistent level and clarity (trim → clipper → limiter → destination)
+        limiter = new Tone.Limiter(-1).connect(radioGroup); // -1 dB ceiling — enough headroom without sounding quiet
         const softClipCurve = (() => {
             const n = 256;
             const curve = new Float32Array(n);
@@ -1685,37 +1710,37 @@
             }
             return curve;
         })();
-        const masterTrim = new Tone.Gain(0.82).connect(limiter); // -1.7 dB trim — keeps soft clipper from distorting on peaks
+        const masterTrim = new Tone.Gain(0.98).connect(limiter); // Near unity — full audibility without clipping
         softClipper = new Tone.WaveShaper(softClipCurve).connect(masterTrim);
-        masterCompressor = new Tone.Compressor(-22, 2.5).connect(softClipper); // Gentler glue — less squash when many instruments play
-        masterCompressor.attack.value = 0.005;
-        masterCompressor.release.value = 0.2;
-        masterCompressor.knee.value = 8;
-        // Clarity EQ: +1.5 dB presence (2.5 kHz) so instruments cut through when many play at once
+        masterCompressor = new Tone.Compressor(-18, 2).connect(softClipper); // Light glue — consistent level, less pump
+        masterCompressor.attack.value = 0.01;
+        masterCompressor.release.value = 0.25;
+        masterCompressor.knee.value = 10;
+        // Clarity EQ: +2 dB presence so piano and melody cut through on any device
         clarityEQ = new Tone.Filter(2500, 'highshelf', -12);
-        clarityEQ.gain.value = 1.5;
+        clarityEQ.gain.value = 2;
         clarityEQ.connect(masterCompressor);
-        masterHighPass = new Tone.Filter(38, "highpass", -24).connect(clarityEQ); // Master: remove sub rumble that causes strange bass noise
+        masterHighPass = new Tone.Filter(38, "highpass", -24).connect(clarityEQ); // Remove sub rumble
 
         if (isMobile()) {
-            masterHighPass.frequency.value = 60;        // Less sub on small drivers, avoids mud and distortion
-            limiter.threshold.value = -3;               // Extra headroom on mobile — reduces gracchii on phones
+            masterHighPass.frequency.value = 55;        // Slightly less sub on small speakers
+            limiter.threshold.value = -1.5;            // Slight extra headroom, still loud enough to hear
             mobilePresenceFilter = new Tone.Filter(2400, 'highshelf', -12);
-            mobilePresenceFilter.gain.value = 1.8;     // +1.8 dB presence so keys/vocals cut through on phone speakers
+            mobilePresenceFilter.gain.value = 2;       // +2 dB presence on phones
             masterCompressor.disconnect(softClipper);
             masterCompressor.connect(mobilePresenceFilter);
             mobilePresenceFilter.connect(softClipper);
         }
-        // Multiband: compress lows (kick/bass) separately so they don't duck mids/highs when many instruments play
+        // Multiband: lighter compression so level stays consistent when many instruments play
         compressor = new Tone.MultibandCompressor({
             lowFrequency: 180,
             highFrequency: 2200,
-            low:  { threshold: -18, ratio: 4, attack: 0.01, release: 0.15 },
-            mid:  { threshold: -20, ratio: 2.2, attack: 0.005, release: 0.2 },
-            high: { threshold: -18, ratio: 2.5, attack: 0.003, release: 0.15 }
+            low:  { threshold: -14, ratio: 2.5, attack: 0.015, release: 0.2 },
+            mid:  { threshold: -16, ratio: 2, attack: 0.008, release: 0.25 },
+            high: { threshold: -14, ratio: 2, attack: 0.005, release: 0.2 }
         }).connect(masterHighPass);
-        masterFilter = new Tone.Filter(3000, "lowpass").connect(compressor);
-        filterLFO = new Tone.LFO(0.05, 2200, 7000).start(); // Wider range — keeps more presence when dark, instruments cut through
+        masterFilter = new Tone.Filter(3200, "lowpass").connect(compressor);
+        filterLFO = new Tone.LFO(0.05, 2800, 7500).start(); // Start with open filter — never close below 2.6k (clamped per-track)
         filterLFO.connect(masterFilter.frequency);
         
         reverb = new Tone.JCReverb(0.22).connect(masterFilter); // Slightly drier — less buildup when many instruments play, reduces distortion
@@ -1909,8 +1934,9 @@
 
         if (timeRemaining < 5000 && !isTransitioning) {
             isTransitioning = true;
-            radioGroup.gain.rampTo(0, 4); 
-            if(filterLFO) { filterLFO.max = 200; filterLFO.frequency.rampTo(0.1, 4); }
+            radioGroup.gain.rampTo(0, 4);
+            // Gentle darkening only — never pull filter below ~2.2 kHz so mix stays audible
+            if (filterLFO) { filterLFO.max = 2200; filterLFO.frequency.rampTo(0.1, 4); }
             fadeUIText(false);
             hideCanvas(); // Fade out canvas during transition
         }
@@ -1926,7 +1952,7 @@
             updateQueueUI();
             
             radioGroup.gain.rampTo(1, 4);
-            if(filterLFO) { filterLFO.frequency.rampTo(0.05, 2); } // Restore LFO speed after transition
+            if (filterLFO) { filterLFO.frequency.rampTo(0.05, 2); } // Restore LFO speed after transition
             fadeUIText(true);
             isTransitioning = false;
             startCanvasTimer(); // Restart 30s timer for new track
@@ -2029,8 +2055,7 @@
             pianoDyad: [['8n','4n','8n','8n'], ['4n','8n','4n'], ['8n','8n','4n','8n']],
             pianoOctave: [['4n','8n','4n'], ['4n','4n','8n'], ['8n','4n']],
             accChord: [['2n','2n','1n','4n'], ['2n','4n','2n'], ['1n','2n','2n'], ['2n','2n','2n','4n']],
-            accArp: [['4n','8n','4n','16n'], ['4n','4n','8n'], ['8n','4n','4n'], ['4n','16n','4n']],
-            lead: [['8n','4n','8n','16n'], ['8n','8n','4n'], ['4n','8n','16n'], ['8n','8n','8n','4n']]
+            accArp: [['4n','8n','4n','16n'], ['4n','4n','8n'], ['8n','4n','4n'], ['4n','16n','4n']]
         };
         state.bassDurations = DURATION_POOLS.bass[Math.floor(currentRNG() * DURATION_POOLS.bass.length)];
         state.pianoChordDurations = DURATION_POOLS.pianoChord[Math.floor(currentRNG() * DURATION_POOLS.pianoChord.length)];
@@ -2039,7 +2064,12 @@
         state.pianoOctaveDurations = DURATION_POOLS.pianoOctave[Math.floor(currentRNG() * DURATION_POOLS.pianoOctave.length)];
         state.accordionChordDurations = DURATION_POOLS.accChord[Math.floor(currentRNG() * DURATION_POOLS.accChord.length)];
         state.accordionArpDurations = DURATION_POOLS.accArp[Math.floor(currentRNG() * DURATION_POOLS.accArp.length)];
-        state.leadDurations = DURATION_POOLS.lead[Math.floor(currentRNG() * DURATION_POOLS.lead.length)];
+        // Lead + bell: pick one melody rhythm profile per track (different note lengths & density per song)
+        const melodyProfile = MELODY_RHYTHM_PROFILES[Math.floor(currentRNG() * MELODY_RHYTHM_PROFILES.length)];
+        state.leadDurations = melodyProfile.lead.slice();
+        state.bellDurations = melodyProfile.bell.slice();
+        state.leadStepMod = melodyProfile.leadStepMod;
+        state.bellStepMod = melodyProfile.bellStepMod;
 
         // --- TIME SIGNATURE: 4/4 (default), 3/4, or 6/8 for variety
         const timeSigKeys = Object.keys(TIME_SIGNATURES);
@@ -2143,8 +2173,8 @@
         if (vibrato.wet) vibrato.wet.value = Math.min(vibrato.wet.value, 0.04);
         
         if (filterLFO) {
-            filterLFO.min = Math.max(filterLFO.min, 1200); // Keep filter open for piano clarity
-            filterLFO.max = Math.min(8000, filterLFO.max + 500); 
+            filterLFO.min = Math.max(filterLFO.min, 2600); // Floor 2.6 kHz so mix is always clear and audible
+            filterLFO.max = Math.min(9000, filterLFO.max + 500);
         }
 
         const vinylLvl = -50 - currentRNG() * 6; // Quiet vinyl crackle behind piano
@@ -2481,16 +2511,14 @@
                 }
             }
 
-            // ─── LEAD MELODY ─── (whisper-quiet — ambient color from chord tones, not a competing line)
-            // Lead picks from the SAME chord the piano and bass are playing — everything matches.
+            // ─── LEAD MELODY ─── (whisper-quiet — ambient color from chord tones; rhythm varies per track)
             if (config.hasLead && !isIntro && !isBreakdown) {
                 const leadProb = isClimax ? 0.22 : isChorus ? 0.08 : (isVerse ? 0.02 : 0);
-                // Play on half-beats (step % 8) not every beat — more space, more relaxing
-                if (leadProb > 0 && seqRNG() < leadProb && step % 8 === 0) {
-                    // Use a chord tone from the current chord (octave 5 for shimmer above piano)
+                const stepMod = state.leadStepMod || 0;
+                const allowStep = (stepMod === 0 && step % 8 === 0) || (stepMod === 1 && step % 8 === 0 && (step + state.barCount) % 2 === 0) || (stepMod === 2 && step % 16 === 0);
+                if (leadProb > 0 && seqRNG() < leadProb && allowStep) {
                     const leadChord = getChord(degree, state.scale, 5, state.useSeventh);
                     const motifIdx = (Math.floor(step / 8) + state.barCount) % (state.trackMotif.length || 8);
-                    // Blend: 70% chord tones (guaranteed harmony), 30% motif (melodic color)
                     let leadNote;
                     if (seqRNG() < 0.7) {
                         leadNote = leadChord[motifIdx % leadChord.length];
@@ -2505,17 +2533,20 @@
                 }
             }
 
-            // ─── BELLS / GLOCKENSPIEL ─── Sparse high melody — answers the piano, lo-fi staple
+            // ─── BELLS / GLOCKENSPIEL ─── Sparse high melody; duration pool and density per track (lo-fi variety)
             if (!isIntro && !isBreakdown && (state.bellProb || 0) > 0) {
                 const bellProb = isClimax ? (state.bellProb * 1.4) : isChorus ? (state.bellProb * 1.1) : state.bellProb;
-                if (seqRNG() < bellProb && (step % 8 === 4 || step % 8 === 6)) {
+                const bellStepMod = state.bellStepMod || 0;
+                const bellStepsOk = (bellStepMod === 0 && (step % 8 === 4 || step % 8 === 6)) || (bellStepMod === 1 && step % 8 === 4);
+                if (seqRNG() < bellProb && bellStepsOk) {
                     const bellChord = getChord(degree, state.scale, 5, state.useSeventh);
                     const motifIdx = (Math.floor(step / 4) + state.barCount) % (state.trackMotif.length || 8);
                     const useMotif = seqRNG() < 0.5 && state.trackMotif[motifIdx];
                     const bellNote = useMotif ? state.trackMotif[motifIdx] : bellChord[Math.floor(seqRNG() * bellChord.length)];
                     if (bellNote) {
                         const bellVel = isClimax ? (0.18 + seqRNG() * 0.08) : isChorus ? (0.14 + seqRNG() * 0.06) : (0.1 + seqRNG() * 0.05);
-                        const bellDur = (state.leadDurations || ['8n'])[Math.floor(seqRNG() * (state.leadDurations || ['8n']).length)];
+                        const bellDurs = state.bellDurations || state.leadDurations || ['8n'];
+                        const bellDur = bellDurs[Math.floor(seqRNG() * bellDurs.length)];
                         bells.triggerAttackRelease(bellNote, bellDur, t, bellVel);
                     }
                 }
