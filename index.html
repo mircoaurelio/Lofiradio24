@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>Lofi 24h - Premium Radio</title>
+    <title>Lofi Radio — 24/7 Chill Beats</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -102,6 +102,13 @@
             border-radius: 8px;
             box-shadow: 0 0 20px var(--dynamic-color);
             transition: background 2s ease, box-shadow 2s ease;
+        }
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin: 4px 0 20px 0;
+            letter-spacing: 0.02em;
         }
 
         .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -739,13 +746,14 @@
         <nav class="sidebar glass-panel">
             <div class="brand">
                 <div class="brand-icon"></div>
-                <span>Lofi.fm</span>
+                <span>Lofi Radio</span>
             </div>
+            <p class="brand-tagline">Beats to study, work & relax</p>
             
             <ul class="nav-menu">
                 <li class="nav-item active">
                     <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                    Start Radio
+                    Listen Live
                 </li>
                 <li class="nav-item">
                     <a href="https://mircoaurelio.github.io/ambient/" target="_blank" rel="noopener noreferrer" class="nav-link">
@@ -761,8 +769,8 @@
         <!-- MAIN STAGE -->
         <main class="main-stage glass-panel">
             <div class="stage-header">
-                <div class="live-tag"><div class="live-dot"></div> LIVE BROADCAST</div>
-                <div class="badge">Pro Member</div>
+                <div class="live-tag"><div class="live-dot"></div> LIVE</div>
+                <div class="badge">24/7</div>
             </div>
 
             <div class="mobile-vibes" style="display: none;"></div>
@@ -789,14 +797,14 @@
                         <span class="badge" id="mood-badge">Neutral</span>
                         <span class="badge" id="bpm-badge">80 BPM</span>
                     </div>
-                    <h1 id="playlist-title">Tap Play to Start</h1>
+                    <h1 id="playlist-title">Tune in to start</h1>
                     <div id="playlist-artist" class="playlist-artist" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 16px; display: none;">—</div>
                     <div class="action-row">
                         <button class="play-btn-lg" id="playBtn">
                             <svg class="icon-play show-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                         </button>
-                        <span id="play-prompt" style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Press play to start the radio</span>
+                        <span id="play-prompt" style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Hit play to tune in</span>
                     </div>
                 </div>
             </div>
@@ -813,8 +821,8 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/></svg>
                 </div>
                 <div>
-                    <div class="q-title" id="bar-title">Tap play to start</div>
-                    <div class="q-artist" id="bar-artist">Lofi.fm</div>
+                    <div class="q-title" id="bar-title">Tune in</div>
+                    <div class="q-artist" id="bar-artist">24/7 Lo-Fi · Beats to relax</div>
                 </div>
             </div>
 
@@ -909,7 +917,7 @@
         'Triplet':    [1,0,0,0, 0,0,2,0, 0,1,0,0],
         'Sparse34':   [1,0,0,0, 0,0,0,0, 2,0,0,0],
     };
-    // Style-consistent drum–bass pairing: kick and bass lock to same pocket
+    // Style-consistent drum–bass pairing: kick and bass lock to same pocket (trip hop = deep, sparse)
     const DRUM_BASS_PAIRS = {
         'Dilla': ['DillaSub', 'LazyGroove', 'BoomBapSub'], 'DillaSwing': ['DillaSub', 'LazyGroove'],
         'BoomBap': ['BoomBapSub', 'DeepRoot', 'GrooveSub'], 'BoomBap2': ['BoomBapSub', 'GrooveSub'],
@@ -1154,23 +1162,36 @@
         { name: 'Minimal', lead: ['4n','2n','4n','2n'], bell: ['4n','2n','4n'], leadStepMod: 1, bellStepMod: 1 }
     ];
 
-    // --- LOFI HIP-HOP STYLES. BPM 68-98, swing for groove (0.04–0.07 = audible triplet feel), bit-crush for lo-fi color.
+    // --- HIP-HOP / CHILL HOP / TRIP HOP STYLES. BPM 62–90, swing for head-nod groove, bit-crush for lo-fi color.
     const STYLES = {
-        'Chill Hop': { bpmRange: [80, 92], swing: 0.055, drumDensity: 0.65, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
-        'Classic': { bpmRange: [72, 85], swing: 0.05, drumDensity: 0.5, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
-        'Sleepy': { bpmRange: [65, 75], swing: 0.04, drumDensity: 0.3, bitCrush: 6, hasLead: false, isGuitar: false, color: '#5b7c99' },
-        'Jazzy': { bpmRange: [75, 90], swing: 0.065, drumDensity: 0.55, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
-        'Minimal': { bpmRange: [70, 82], swing: 0.042, drumDensity: 0.35, bitCrush: 5, hasLead: false, isGuitar: false, color: '#6b7280' },
-        'Study': { bpmRange: [76, 88], swing: 0.05, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
-        'Twilight': { bpmRange: [72, 84], swing: 0.048, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#7c8ba3' },
-        'Rainy': { bpmRange: [70, 82], swing: 0.046, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#6b8cae' },
-        'Vintage': { bpmRange: [74, 86], swing: 0.055, drumDensity: 0.5, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c9a959' },
-        'Neo-Soul': { bpmRange: [78, 92], swing: 0.068, drumDensity: 0.6, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
-        'Soft': { bpmRange: [70, 80], swing: 0.044, drumDensity: 0.35, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
-        'Warm': { bpmRange: [76, 90], swing: 0.052, drumDensity: 0.55, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
-        'Mellow': { bpmRange: [72, 84], swing: 0.05, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
-        'Cozy': { bpmRange: [68, 80], swing: 0.048, drumDensity: 0.4, bitCrush: 4, hasLead: true, isGuitar: false, color: '#8b7355' },
-        'Sunrise': { bpmRange: [76, 88], swing: 0.05, drumDensity: 0.45, bitCrush: 3, hasLead: true, isGuitar: false, color: '#f4a261' }
+        'Chill Hop': { bpmRange: [76, 88], swing: 0.058, drumDensity: 0.62, bitCrush: 0, hasLead: true, isGuitar: false, color: '#e07c54' },
+        'Classic': { bpmRange: [72, 84], swing: 0.052, drumDensity: 0.52, bitCrush: 4, hasLead: true, isGuitar: false, color: '#d4a055' },
+        'Trip Hop': { bpmRange: [62, 76], swing: 0.056, drumDensity: 0.45, bitCrush: 4, hasLead: true, isGuitar: false, color: '#4a5568' },
+        'Jazzy': { bpmRange: [74, 88], swing: 0.068, drumDensity: 0.58, bitCrush: 2, hasLead: true, isGuitar: false, color: '#7c5cbf' },
+        'Neo-Soul': { bpmRange: [76, 90], swing: 0.07, drumDensity: 0.62, bitCrush: 2, hasLead: true, isGuitar: false, color: '#b56576' },
+        'Vintage': { bpmRange: [72, 84], swing: 0.056, drumDensity: 0.52, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c9a959' },
+        'Sleepy': { bpmRange: [64, 74], swing: 0.042, drumDensity: 0.32, bitCrush: 6, hasLead: false, isGuitar: false, color: '#5b7c99' },
+        'Minimal': { bpmRange: [68, 80], swing: 0.045, drumDensity: 0.38, bitCrush: 5, hasLead: false, isGuitar: false, color: '#6b7280' },
+        'Study': { bpmRange: [74, 86], swing: 0.05, drumDensity: 0.48, bitCrush: 4, hasLead: true, isGuitar: false, color: '#84a98c' },
+        'Twilight': { bpmRange: [70, 82], swing: 0.05, drumDensity: 0.42, bitCrush: 4, hasLead: true, isGuitar: false, color: '#7c8ba3' },
+        'Rainy': { bpmRange: [68, 80], swing: 0.048, drumDensity: 0.42, bitCrush: 4, hasLead: true, isGuitar: false, color: '#6b8cae' },
+        'Soft': { bpmRange: [68, 78], swing: 0.046, drumDensity: 0.38, bitCrush: 5, hasLead: true, isGuitar: false, color: '#a8b5a0' },
+        'Warm': { bpmRange: [74, 86], swing: 0.054, drumDensity: 0.55, bitCrush: 3, hasLead: true, isGuitar: false, color: '#c4785a' },
+        'Mellow': { bpmRange: [70, 82], swing: 0.052, drumDensity: 0.48, bitCrush: 4, hasLead: true, isGuitar: false, color: '#9ca777' },
+        'Cozy': { bpmRange: [66, 78], swing: 0.05, drumDensity: 0.42, bitCrush: 4, hasLead: true, isGuitar: false, color: '#8b7355' },
+        'Sunrise': { bpmRange: [74, 86], swing: 0.05, drumDensity: 0.46, bitCrush: 3, hasLead: true, isGuitar: false, color: '#f4a261' }
+    };
+    // Style weights: hip-hop / chill hop / trip hop styles favored
+    const STYLE_WEIGHTS = {
+        'Chill Hop': 4, 'Classic': 4, 'Trip Hop': 3, 'Jazzy': 4, 'Neo-Soul': 4, 'Vintage': 4,
+        'Mellow': 2, 'Warm': 2, 'Cozy': 2, 'Twilight': 2, 'Rainy': 2,
+        'Study': 1, 'Soft': 1, 'Minimal': 1, 'Sleepy': 1, 'Sunrise': 1
+    };
+    // Drum pattern weights: boom-bap, Dilla, chill hop, jazz hop, neo-soul, half-time (trip hop) favored
+    const DRUM_WEIGHTS = {
+        'BoomBap': 3, 'BoomBap2': 2, 'Dilla': 3, 'DillaSwing': 3, 'ChillHop': 3, 'JazzHop': 3,
+        'Lofi': 3, 'LofiHeavy': 2, 'NeoSoul': 3, 'Pocket': 3, 'Swing': 2, 'Shuffle': 2,
+        'HalfTime': 2, 'Backbeat': 1, 'Trap': 0.5, 'Broken': 0.5
     };
 
     // --- LOFI SOUND BANKS (10x variation). Keys, pad, bass, lead, effects, drums — hit tones only.
@@ -1669,7 +1690,7 @@
         navigator.mediaSession.metadata = new MediaMetadata({
             title: title,
             artist: artist,
-            album: 'Lofi.fm Radio'
+            album: 'Lofi Radio — Live'
         });
     }
 
@@ -1762,9 +1783,9 @@
         filterLFO = new Tone.LFO(0.05, 2800, 7500).start(); // Start with open filter — never close below 2.6k (clamped per-track)
         filterLFO.connect(masterFilter.frequency);
         
-        // Effect bus: trim level into reverb so dense sections don't overload the master
+        // Effect bus: enough room so it feels like a broadcast, not dry synths in a void
         const reverbInputGain = new Tone.Gain(0.82).connect(masterFilter);
-        reverb = new Tone.JCReverb(0.17).connect(reverbInputGain); // Drier — less buildup when many instruments play
+        reverb = new Tone.JCReverb(0.24).connect(reverbInputGain); // More room — less "tone app", more station
         delay = new Tone.PingPongDelay("8n", 0.08).connect(reverb);
         chorus = new Tone.Chorus(2, 2.5, 0.5).connect(delay).start(); 
         bitCrusher = new Tone.BitCrusher(16).connect(chorus); // 16-bit: less grit stacking, fewer harsh peaks that can crack
@@ -1777,8 +1798,8 @@
         // Bypasses masterFilter AND reverb (JCReverb wet=1 was eating the dry signal!).
         // Dry signal: keys → compressor → limiter → radioGroup → destination
         // Reverb send: keys → pianoReverbSend (quiet) → compressor (just for ambience)
-        const pianoReverbSend = new Tone.JCReverb(0.18).connect(compressor);
-        pianoReverbSend.wet.value = 1; // Send is 100% wet — the dry comes from the direct connection
+        const pianoReverbSend = new Tone.JCReverb(0.22).connect(compressor);
+        pianoReverbSend.wet.value = 1; // Send 100% wet — piano sits in the same room as the rest
         keys = new Tone.PolySynth(Tone.FMSynth, {
             volume: -8,
             harmonicity: 3,
@@ -1859,7 +1880,7 @@
         const noiseGain = new Tone.Gain(1).connect(radioGroup);
         vinylNoise = new Tone.Noise("brown").start(); 
         vinylNoise.connect(new Tone.Filter(500, "highpass").connect(noiseGain));
-        vinylNoise.volume.value = -52; // Subtle crackle — sits behind the piano, not on top
+        vinylNoise.volume.value = -48; // Audible crackle — record feel, not sterile synth
         
         rainNoise = new Tone.Noise("pink").start(); 
         rainNoise.connect(new Tone.AutoFilter("0.1hz").connect(noiseGain));
@@ -1879,7 +1900,7 @@
         tapeNoise = new Tone.Noise("pink").start();
         const tapeFilter = new Tone.Filter(400, "highpass").connect(noiseGain);
         tapeNoise.connect(new Tone.AutoFilter("0.08hz").connect(tapeFilter));
-        tapeNoise.volume.value = -99;
+        tapeNoise.volume.value = -99; // Raised per-track when ambientLayer === 'tape'
 
         analyser = new Tone.Analyser("fft", 64);
         masterFilter.connect(analyser);
@@ -1997,19 +2018,27 @@
     function generateNewTrack(seed) {
         currentRNG = mulberry32(seed);
 
-        // Weight toward Chill/Dreamy (mature lo-fi); Uplifting less often to avoid nursery vibe
-        const moodWeights = [2, 0.4, 1, 2, 1]; // Chill, Uplifting, Groovy, Dreamy, Warm
+        // Hip-hop / chill hop / trip hop: Chill, Groovy, Dreamy favored; Uplifting rare
+        const moodWeights = [2.5, 0.15, 1.8, 2.2, 1.2]; // Chill, Uplifting, Groovy, Dreamy, Warm
         const moods = ['Chill', 'Uplifting', 'Groovy', 'Dreamy', 'Warm'];
-        const total = moodWeights.reduce((a, b) => a + b, 0);
-        let r = currentRNG() * total;
+        const moodTotal = moodWeights.reduce((a, b) => a + b, 0);
+        let r = currentRNG() * moodTotal;
         for (let i = 0; i < moods.length; i++) {
             r -= moodWeights[i];
             if (r <= 0) { state.mood = moods[i]; break; }
         }
         if (!state.mood) state.mood = 'Chill';
 
+        // Weighted style: Chill Hop, Jazzy, Neo-Soul, Vintage, Classic, Trip Hop much more likely
         const styleKeys = Object.keys(STYLES);
-        state.style = styleKeys[Math.floor(currentRNG() * styleKeys.length)];
+        const styleWeightArr = styleKeys.map(k => STYLE_WEIGHTS[k] != null ? STYLE_WEIGHTS[k] : 1);
+        const styleTotal = styleWeightArr.reduce((a, b) => a + b, 0);
+        r = currentRNG() * styleTotal;
+        for (let i = 0; i < styleKeys.length; i++) {
+            r -= styleWeightArr[i];
+            if (r <= 0) { state.style = styleKeys[i]; break; }
+        }
+        if (!state.style) state.style = 'Chill Hop';
         const config = STYLES[state.style];
 
         state.key = NOTES[Math.floor(currentRNG() * NOTES.length)];
@@ -2020,18 +2049,25 @@
         state.breakdownChordDegree = state.progression[0];  // Section-specific: breakdown holds one chord
         
         let bpm = config.bpmRange[0] + Math.floor(currentRNG() * (config.bpmRange[1] - config.bpmRange[0]));
-        if (state.mood === 'Uplifting' || state.mood === 'Groovy') bpm += 4;
+        if (state.mood === 'Groovy') bpm += 2; // Slight push for head-nod, not bright
         if (state.mood === 'Dreamy') bpm -= 1;
-        state.bpm = Math.max(65, Math.min(98, bpm)); // Lo-fi hip-hop sweet spot: 65-98 BPM
+        state.bpm = Math.max(62, Math.min(90, bpm)); // Hip-hop / chill / trip hop: 62-90 BPM
         
         Tone.Transport.bpm.value = state.bpm; 
 
         state.params.swing = config.swing;
         state.params.drumDensity = config.drumDensity;
         
-        // 1. Drum: only iconic hit patterns (style can narrow pool)
+        // 1. Drum: weighted toward boom-bap, Dilla, chill hop, jazz hop, neo-soul, half-time
         const drumKeys = Object.keys(DRUM_LOOPS);
-        const drumKey = drumKeys[Math.floor(currentRNG() * drumKeys.length)];
+        const drumWeightArr = drumKeys.map(k => DRUM_WEIGHTS[k] != null ? DRUM_WEIGHTS[k] : 1);
+        const drumTotal = drumWeightArr.reduce((a, b) => a + b, 0);
+        r = currentRNG() * drumTotal;
+        let drumKey = drumKeys[0];
+        for (let i = 0; i < drumKeys.length; i++) {
+            r -= drumWeightArr[i];
+            if (r <= 0) { drumKey = drumKeys[i]; break; }
+        }
         state.drumPattern = [...DRUM_LOOPS[drumKey]];
         
         // 2. Motif from hook contours (scale degrees 0–6, 7 = root up octave). Octave placement for drama.
@@ -2085,7 +2121,7 @@
         const ambientOptions = ['rain', 'wind', 'fire', 'tape'];
         state.ambientLayer = ambientOptions[Math.floor(currentRNG() * ambientOptions.length)];
         
-        state.useSeventh = (state.style === 'Jazzy' || state.style === 'Neo-Soul' || state.style === 'Vintage' || state.style === 'Chill Hop');
+        state.useSeventh = (state.style === 'Jazzy' || state.style === 'Neo-Soul' || state.style === 'Vintage' || state.style === 'Chill Hop' || state.style === 'Trip Hop' || state.style === 'Classic');
         state.lastChordVoicing = null;
 
         // --- NOTE LENGTH VARIATION: per-track duration pools (shuffle weights for variety)
@@ -2244,11 +2280,11 @@
             filterLFO.max = Math.min(9000, filterLFO.max + 500);
         }
 
-        const vinylLvl = -50 - currentRNG() * 6; // Quiet vinyl crackle behind piano
+        const vinylLvl = -46 - currentRNG() * 6; // Present vinyl crackle — less "clean synth", more record
         vinylNoise.volume.rampTo(vinylLvl, 2);
         
         // One ambient layer per track (rain, wind, fire, tape) — changes each song
-        const ambientVol = -36 - currentRNG() * 10; // -36 to -46
+        const ambientVol = -34 - currentRNG() * 10; // Slightly more present for texture
         const rainLvl = state.ambientLayer === 'rain' ? ambientVol : -99;
         const windLvl = state.ambientLayer === 'wind' ? ambientVol : -99;
         const fireLvl = state.ambientLayer === 'fire' ? ambientVol : -99;
@@ -2304,7 +2340,7 @@
         queueContainer.innerHTML = '';
         const header = document.createElement('div');
         header.className = 'queue-header';
-        header.textContent = 'Next songs';
+        header.textContent = 'Up next';
         queueContainer.appendChild(header);
         
         let pointer = state.trackStartTime; 
@@ -2328,8 +2364,16 @@
     }
 
     function getStyleForSeed(seed) {
+        const rng = mulberry32(seed);
         const styleKeys = Object.keys(STYLES);
-        return styleKeys[Math.floor(mulberry32(seed)() * styleKeys.length)];
+        const styleWeightArr = styleKeys.map(k => STYLE_WEIGHTS[k] != null ? STYLE_WEIGHTS[k] : 1);
+        const styleTotal = styleWeightArr.reduce((a, b) => a + b, 0);
+        let r = rng() * styleTotal;
+        for (let i = 0; i < styleKeys.length; i++) {
+            r -= styleWeightArr[i];
+            if (r <= 0) return styleKeys[i];
+        }
+        return styleKeys[0];
     }
 
     function addTrackRow(container, num, meta, styleName, isActive) {
