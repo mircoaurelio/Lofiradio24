@@ -184,6 +184,35 @@
             display: flex; align-items: center; gap: 8px;
         }
         .live-dot { width: 6px; height: 6px; background: #ff4444; border-radius: 50%; animation: blink 2s infinite; }
+        .focus-mode-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .focus-mode-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        /* Focus mode shader background */
+        #focus-shader-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+        body.focus-mode-shader #focus-shader-canvas {
+            opacity: 0.85;
+        }
 
         /* Hero */
         .hero-layout {
@@ -203,21 +232,67 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        /* Dynamic Art Gradient */
-        .album-art-container::before {
+        /* Spinning vinyl: larger than container so overflow crops the image and hides square corners */
+        .vinyl-spinner {
+            position: absolute;
+            width: 145%;
+            height: 145%;
+            left: -22.5%;
+            top: -22.5%;
+            border-radius: inherit;
+            animation: vinylSpin 20s linear infinite;
+            animation-play-state: paused;
+        }
+        body.hero-playing .vinyl-spinner {
+            animation-play-state: running;
+        }
+        @keyframes vinylSpin { 100% { transform: rotate(360deg); } }
+        .vinyl-spinner::before {
             content: '';
             position: absolute;
             top: -50%; left: -50%; width: 200%; height: 200%;
             background: conic-gradient(from 0deg, transparent, var(--dynamic-color), transparent);
-            animation: rotateArt 10s linear infinite;
             opacity: 0.3;
             transition: background 2s ease;
+            z-index: 1;
         }
-        @keyframes rotateArt { 100% { transform: rotate(360deg); } }
-
         .album-art-container:hover { transform: scale(1.02) rotate(-1deg); }
-        
-        #visualizer { position: relative; width: 100%; height: 100%; opacity: 0.8; z-index: 2; }
+
+        /* Cat background on vinyl (zoomed so square edges don't show when rotating) */
+        .vinyl-cat-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-size: 125%;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        /* Enterprise-style spectrum: under song name; visible only when playing */
+        .spectrum-panel {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 48px;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            display: none;
+            flex-direction: column;
+            justify-content: flex-end;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        body.hero-playing .spectrum-panel { display: flex; }
+        body.hero-playing .hero-action-row { display: none !important; }
+        #visualizer {
+            display: block;
+            width: 100%;
+            height: 32px;
+            border-radius: 6px;
+            opacity: 1;
+        }
 
         .track-details h1 {
             font-size: 4rem;
@@ -246,7 +321,8 @@
 
         .action-row { display: flex; gap: 16px; align-items: center; }
         .play-btn-lg {
-            width: 64px; height: 64px;
+            width: 68px; height: 68px;
+         
             border-radius: 50%;
             background: var(--dynamic-color);
             border: none;
@@ -529,6 +605,7 @@
                 width: 280px;
                 height: 280px;
             }
+            .spectrum-panel { max-width: 100%; margin-bottom: 16px; }
             .mobile-track-time {
                 display: flex;
                 align-items: center;
@@ -707,6 +784,7 @@
 
     <div class="ambient-glow" id="bg-glow"></div>
     <div class="noise-overlay"></div>
+    <canvas id="focus-shader-canvas" aria-hidden="true"></canvas>
 
     <!-- Spotify Canvas: looping video background (mobile, fades in after 30s) -->
     <div class="canvas-video-wrap" id="canvas-container">
@@ -768,7 +846,10 @@
         <main class="main-stage glass-panel">
             <div class="stage-header">
                 <div class="live-tag"><div class="live-dot"></div> LIVE</div>
-                <div class="badge">24/7</div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="badge">24/7</div>
+                    <button type="button" class="focus-mode-btn" id="focusModeBtn" aria-label="Switch to Focus mode">Focus</button>
+                </div>
             </div>
 
             <div class="mobile-vibes" style="display: none;"></div>
@@ -776,7 +857,9 @@
             <div class="hero-layout">
                 <div class="album-art-wrapper">
                     <div class="album-art-container">
-                        <canvas id="visualizer"></canvas>
+                        <div class="vinyl-spinner">
+                            <div class="vinyl-cat-bg" id="vinyl-cat-bg" aria-hidden="true"></div>
+                        </div>
                     </div>
                     <div class="mobile-track-time">
                         <span id="mobile-time-current">0:00</span>
@@ -797,7 +880,10 @@
                     </div>
                     <h1 id="playlist-title">Tune in to start</h1>
                     <div id="playlist-artist" class="playlist-artist" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 16px; display: none;">—</div>
-                    <div class="action-row">
+                    <div class="spectrum-panel glass-panel" aria-label="Audio spectrum">
+                        <canvas id="visualizer"></canvas>
+                    </div>
+                    <div class="action-row hero-action-row">
                         <button class="play-btn-lg" id="playBtn">
                             <svg class="icon-play show-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -1856,11 +1942,10 @@
     const MOOD_SCALES = { 'Chill': ['Dorian', 'Minor', 'Phrygian'], 'Uplifting': ['Major', 'Lydian'], 'Groovy': ['Dorian', 'Minor', 'Mixolydian'], 'Dreamy': ['Dorian', 'Minor', 'Lydian'], 'Warm': ['Minor', 'Dorian', 'Mixolydian'] };
     const MODES = { 'Minor': [0, 2, 3, 5, 7, 8, 10], 'Dorian': [0, 2, 3, 5, 7, 9, 10], 'Major': [0, 2, 4, 5, 7, 9, 11], 'Lydian': [0, 2, 4, 6, 7, 9, 11], 'Phrygian': [0, 1, 3, 5, 7, 8, 10], 'Mixolydian': [0, 2, 4, 5, 7, 9, 10] };
 
-    // --- TIME SIGNATURES --- 4/4 (16 steps), 3/4 (12 steps), 6/8 (12 steps, triplet feel)
+    // --- TIME SIGNATURES --- 4/4 (16 steps), 3/4 (12 steps) only
     const TIME_SIGNATURES = {
         '4/4': { stepsPerBar: 16, transportInterval: '16n' },
-        '3/4': { stepsPerBar: 12, transportInterval: '16n' },
-        '6/8': { stepsPerBar: 12, transportInterval: '16n' }
+        '3/4': { stepsPerBar: 12, transportInterval: '16n' }
     };
 
     // --- Lo-fi hip-hop drum patterns. 1=kick, 2=snare, 0=rest. (16 iconic patterns)
@@ -2532,16 +2617,114 @@
         overlay.style.transform = `translateY(${-progress * 30}px)`;
     }
 
+    /** Cat per song: preloaded URL and which seed it belongs to */
+    var nextCatUrl = null;
+    var nextCatSeed = null;
+    var catPreloadedForTrack = false;
+    var firstTrackCatDone = false;
+
+    var CAT_CACHE_KEY = 'radiolofi_cat_cache';
+    var CAT_CACHE_MAX = 80;
+
+    function getCatCache() {
+        try {
+            var raw = localStorage.getItem(CAT_CACHE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) { return {}; }
+    }
+    function setCatCache(cache) {
+        try {
+            var keys = Object.keys(cache);
+            while (keys.length > CAT_CACHE_MAX) {
+                delete cache[keys.shift()];
+            }
+            localStorage.setItem(CAT_CACHE_KEY, JSON.stringify(cache));
+        } catch (e) {}
+    }
+
+    function catUrlForSeed(seed) {
+        var page = ((seed >>> 0) % 500);
+        return 'https://api.thecatapi.com/v1/images/search?limit=1&order=ASC&page=' + page;
+    }
+
+    function preloadNextCat(seed) {
+        if (seed == null) return;
+        var cache = getCatCache();
+        var sk = String(seed);
+        if (cache[sk]) {
+            nextCatUrl = cache[sk];
+            nextCatSeed = seed;
+            return;
+        }
+        fetch(catUrlForSeed(seed))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                if (arr && arr[0] && arr[0].url) {
+                    nextCatUrl = arr[0].url;
+                    nextCatSeed = seed;
+                    cache[sk] = nextCatUrl;
+                    setCatCache(cache);
+                }
+            })
+            .catch(function() {});
+    }
+
+    /** Load cat for this song's seed; same seed always shows same cat (cached so refresh keeps it) */
+    function loadVinylCat(seed) {
+        var el = document.getElementById('vinyl-cat-bg');
+        if (!el) return;
+        var s = seed != null ? seed : (state && state.currentSeed != null ? state.currentSeed : 0);
+        if (nextCatUrl && nextCatSeed === s) {
+            el.style.backgroundImage = 'url(' + nextCatUrl + ')';
+            nextCatUrl = null;
+            nextCatSeed = null;
+            if (state.trackDuration > 0) {
+                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+            }
+            return;
+        }
+        var cache = getCatCache();
+        var sk = String(s);
+        if (cache[sk]) {
+            el.style.backgroundImage = 'url(' + cache[sk] + ')';
+            if (state.trackDuration > 0) {
+                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+            }
+            return;
+        }
+        fetch(catUrlForSeed(s))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                if (arr && arr[0] && arr[0].url) {
+                    var url = arr[0].url;
+                    el.style.backgroundImage = 'url(' + url + ')';
+                    cache[sk] = url;
+                    setCatCache(cache);
+                    if (state.trackDuration > 0) {
+                        var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                        if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+                    }
+                }
+            })
+            .catch(function() {});
+    }
+
     // Initialize canvas interactions once DOM is ready
     (function initCanvasInteractions() {
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', function() {
                 setupCanvasScroll();
                 setupCanvasTapToggle();
+                var info = getCurrentTrackInfo();
+                loadVinylCat(info ? info.seed : 0);
             });
         } else {
             setupCanvasScroll();
             setupCanvasTapToggle();
+            var info = getCurrentTrackInfo();
+            loadVinylCat(info ? info.seed : 0);
         }
     })();
 
@@ -2696,7 +2879,7 @@
             generateNewTrack(state.currentSeed);
             updateQueueUI();
             if (!lofiEngine) lofiEngine = new LofiEngine();
-            lofiEngine.init().then(function() {
+            await lofiEngine.init().then(function() {
                 lofiInitialized = true;
                 lofiEngine.start();
                 lofiPlaying = true;
@@ -2958,8 +3141,8 @@
     }
 
     // --- ENGINE ---
-    function getCurrentTrackInfo() {
-        const now = Date.now() + state.timeOffset;
+    function getCurrentTrackInfo(nowOverride) {
+        const now = nowOverride !== undefined ? nowOverride : (Date.now() + state.timeOffset);
         const currentHour = Math.floor(now / 3600000); 
         
         let pointer = currentHour * 3600000;
@@ -2985,6 +3168,12 @@
         const now = Date.now() + state.timeOffset;
         const timeRemaining = (state.trackStartTime + state.trackDuration) - now;
 
+        if (timeRemaining > 0 && timeRemaining <= 20000 && currentChannel === 'lofi' && !catPreloadedForTrack) {
+            catPreloadedForTrack = true;
+            var nextTrackInfo = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+            if (nextTrackInfo && nextTrackInfo.seed != null) preloadNextCat(nextTrackInfo.seed);
+        }
+
         if (timeRemaining < 5000 && !isTransitioning) {
             isTransitioning = true;
             if (radioGroup) radioGroup.gain.rampTo(0, 4);
@@ -2996,14 +3185,18 @@
 
         if (timeRemaining <= 0) {
             const nextTrack = getCurrentTrackInfo();
+            if (!nextTrack || nextTrack.startTime == null || !nextTrack.duration) return;
             state.currentSeed = nextTrack.seed;
             state.trackStartTime = nextTrack.startTime;
             state.trackDuration = nextTrack.duration;
-            
+
+            catPreloadedForTrack = false;
+            loadVinylCat();
+
             generateNewTrack(state.currentSeed);
             if (currentChannel !== 'lofi') startSequencer(); // Lo-Fi uses LofiEngine (reads state each step)
             updateQueueUI();
-            
+
             if (radioGroup) radioGroup.gain.rampTo(1, 4);
             if (filterLFO) { filterLFO.frequency.rampTo(0.05, 2); } // Restore LFO speed after transition
             fadeUIText(true);
@@ -3154,7 +3347,7 @@
         state.leadStepMod = melodyProfile.leadStepMod;
         state.bellStepMod = melodyProfile.bellStepMod;
 
-        // --- TIME SIGNATURE: 4/4 (default), 3/4, or 6/8 for variety
+        // --- TIME SIGNATURE: 4/4 (default) or 3/4
         const timeSigKeys = Object.keys(TIME_SIGNATURES);
         const timeSigKey = timeSigKeys[Math.floor(currentRNG() * timeSigKeys.length)];
         state.timeSignature = timeSigKey;
@@ -3332,6 +3525,7 @@
 
             // Sync canvas overlay if visible
             if (canvasVisible) syncCanvasOverlay();
+            if (!firstTrackCatDone) { loadVinylCat(); firstTrackCatDone = true; }
         }, 1000); 
 
         state.barCount = 4;
@@ -3833,8 +4027,8 @@
     function updateUIProgress() {
         if (!state.isPlaying) return;
         const now = Date.now() + state.timeOffset;
-        const elapsed = now - state.trackStartTime;
-        const duration = state.trackDuration;
+        const elapsed = Math.max(0, now - state.trackStartTime);
+        const duration = state.trackDuration || 1;
         let percent = (elapsed / duration) * 100;
         percent = Math.max(0, Math.min(100, percent)); 
         document.getElementById('progress-bar').style.width = percent + '%';
@@ -3868,11 +4062,11 @@
     }
 
     function updatePlayButtonUI(playing) {
-        const heroPlay = document.querySelector('#playBtn .icon-play');
-        const heroPause = document.querySelector('#playBtn .icon-pause');
-        if(heroPlay && heroPause) {
-            heroPlay.style.display = playing ? 'none' : 'block';
-            heroPause.style.display = playing ? 'block' : 'none';
+        if (playing) {
+            document.body.classList.add('hero-playing');
+            drawVisualizer();
+        } else {
+            document.body.classList.remove('hero-playing');
         }
         const barPlay = document.querySelector('#barPlayBtn .icon-play');
         const barPause = document.querySelector('#barPlayBtn .icon-pause');
@@ -4010,6 +4204,107 @@
             document.getElementById('mood-badge').innerText = AMBIENT_MOODS[currentAmbientMood].name;
             document.getElementById('bpm-badge').innerText = '24h';
         }
+        updateFocusModeButton();
+    }
+
+    function updateFocusModeButton() {
+        var btn = document.getElementById('focusModeBtn');
+        if (!btn) return;
+        var inFocusMode = (currentChannel === 'ambient' && currentAmbientMood === 'focus');
+        btn.innerText = inFocusMode ? 'Lo Fi' : 'Focus';
+        btn.setAttribute('aria-label', inFocusMode ? 'Switch to Lo Fi mode' : 'Switch to Focus mode');
+        if (inFocusMode) startFocusShader(); else stopFocusShader();
+    }
+
+    var focusShaderGl = null;
+    var focusShaderAnimationId = null;
+    var focusShaderTime = 0;
+
+    function initFocusShader() {
+        var canvas = document.getElementById('focus-shader-canvas');
+        if (!canvas) return null;
+        var gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+        if (!gl) return null;
+        var vshader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vshader, 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}');
+        gl.compileShader(vshader);
+        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fshader, [
+            'precision mediump float;',
+            'uniform vec2 uRes;',
+            'uniform float uTime;',
+            'void main(){',
+            '  vec2 uv=gl_FragCoord.xy/uRes;',
+            '  float t=uTime*0.06;',
+            '  float n=sin(uv.x*2.2+t)*0.5+0.5;',
+            '  n+=sin(uv.y*1.8+t*0.8)*0.5+0.5;',
+            '  n=n*0.4+0.35;',
+            '  float warm=0.28+n*0.18;',
+            '  float r=warm+sin(uv.x+uv.y+t)*0.03;',
+            '  float g=warm*0.95+sin(uv.y*1.2+t*0.9)*0.02;',
+            '  float b=warm*0.75;',
+            '  float d=length(uv-0.5);',
+            '  float vignette=1.-smoothstep(0.3,0.95,d)*0.4;',
+            '  r*=vignette; g*=vignette; b*=vignette;',
+            '  gl_FragColor=vec4(r,g,b,0.9);',
+            '}'
+        ].join(''));
+        gl.compileShader(fshader);
+        if (!gl.getShaderParameter(fshader, gl.COMPILE_STATUS)) return null;
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vshader);
+        gl.attachShader(prog, fshader);
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+        gl.useProgram(prog);
+        var buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+        var loc = gl.getAttribLocation(prog, 'p');
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        return { gl: gl, prog: prog, canvas: canvas };
+    }
+
+    function resizeFocusShader() {
+        if (!focusShaderGl) return;
+        var c = focusShaderGl.canvas;
+        var dpr = window.devicePixelRatio || 1;
+        c.width = Math.ceil(c.clientWidth * dpr);
+        c.height = Math.ceil(c.clientHeight * dpr);
+        focusShaderGl.gl.viewport(0, 0, c.width, c.height);
+    }
+
+    function drawFocusShader() {
+        if (!focusShaderGl) return;
+        var gl = focusShaderGl.gl;
+        var prog = focusShaderGl.prog;
+        focusShaderTime += 0.016;
+        gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), focusShaderGl.canvas.width, focusShaderGl.canvas.height);
+        gl.uniform1f(gl.getUniformLocation(prog, 'uTime'), focusShaderTime);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        focusShaderAnimationId = requestAnimationFrame(drawFocusShader);
+    }
+
+    function startFocusShader() {
+        if (focusShaderGl == null) {
+            focusShaderGl = initFocusShader();
+            if (focusShaderGl) window.addEventListener('resize', resizeFocusShader);
+        }
+        if (!focusShaderGl) return;
+        document.body.classList.add('focus-mode-shader');
+        resizeFocusShader();
+        if (focusShaderAnimationId) cancelAnimationFrame(focusShaderAnimationId);
+        drawFocusShader();
+    }
+
+    function stopFocusShader() {
+        document.body.classList.remove('focus-mode-shader');
+        if (focusShaderAnimationId) {
+            cancelAnimationFrame(focusShaderAnimationId);
+            focusShaderAnimationId = null;
+        }
     }
 
     async function togglePlay() {
@@ -4085,33 +4380,54 @@
         if (!playing) return;
         requestAnimationFrame(drawVisualizer);
         if (!pageVisible || document.visibilityState === 'hidden') return;
+        var panel = document.querySelector('.spectrum-panel');
+        if (panel) {
+            var rect = panel.getBoundingClientRect();
+            var cw = Math.max(1, Math.floor(rect.width));
+            var ch = 32;
+            if (canvas.width !== cw || canvas.height !== ch) {
+                canvas.width = cw;
+                canvas.height = ch;
+            }
+        } else if (!canvas.width || !canvas.height) {
+            canvas.width = 260;
+            canvas.height = 32;
+        }
         var w = canvas.width;
         var h = canvas.height;
         ctx.clearRect(0, 0, w, h);
-        var bufferLength, dataArray;
+        var bufferLength, dataArray, useByteScale;
         if (currentChannel === 'ambient' && ambientEngine) {
             ambientEngine.getAnalyserData(ambientDataArray);
             bufferLength = ambientDataArray.length;
             dataArray = ambientDataArray;
+            useByteScale = true;
         } else if (currentChannel === 'lofi' && lofiEngine) {
             lofiEngine.getAnalyserData(lofiDataArray);
             bufferLength = lofiDataArray.length;
             dataArray = lofiDataArray;
+            useByteScale = true;
         } else {
             if (!analyser) return;
             bufferLength = analyser.getValue().length;
             dataArray = analyser.getValue();
+            useByteScale = false;
         }
-        var barWidth = (w / bufferLength) * 2;
-        var x = 0;
-        for (var i = 0; i < bufferLength; i++) {
-            var val = (dataArray[i] || 0) + 140; 
-            var barHeight = Math.max(0, val * 2.5); 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        var barCount = 48;
+        var barWidth = Math.max(1, (w / barCount) - 1);
+        var gap = 1;
+        var maxBarHeight = h - 2;
+        for (var i = 0; i < barCount; i++) {
+            var idx = Math.floor((i / barCount) * bufferLength);
+            var raw = dataArray[idx] || 0;
+            var val = useByteScale ? (raw / 255) * 200 : (raw + 140);
+            var barHeight = Math.max(2, Math.min(maxBarHeight, (val / 200) * maxBarHeight * 1.4));
+            var x = i * (barWidth + gap);
+            var y = h - barHeight;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
             ctx.beginPath();
-            ctx.roundRect(x, h/2 - barHeight/2, barWidth, barHeight, 50);
+            ctx.roundRect(x, y, barWidth, barHeight, 2);
             ctx.fill();
-            x += barWidth + 2;
         }
     }
 
@@ -4135,7 +4451,21 @@
 
     document.querySelector('#nav-lofi').addEventListener('click', function() { switchChannel('lofi'); });
     document.querySelector('#nav-ambient').addEventListener('click', function() { switchChannel('ambient'); });
-    
+
+    document.getElementById('focusModeBtn').addEventListener('click', function() {
+        if (currentChannel === 'ambient' && currentAmbientMood === 'focus') {
+            switchChannel('lofi');
+        } else {
+            switchChannel('ambient');
+            currentAmbientMood = 'focus';
+            if (ambientEngine) ambientEngine.setMood('focus');
+            document.getElementById('mood-badge').innerText = AMBIENT_MOODS.focus.name;
+            updateFocusModeButton();
+            if (!ambientPlaying) startAmbientChannel();
+        }
+    });
+    updateFocusModeButton();
+
     document.getElementById('nextBtn').addEventListener('click', function() { 
         if (currentChannel === 'ambient') {
             var keys = Object.keys(AMBIENT_MOODS);
@@ -4144,6 +4474,7 @@
             if (ambientEngine) ambientEngine.setMood(currentAmbientMood);
             document.getElementById('mood-badge').innerText = AMBIENT_MOODS[currentAmbientMood].name;
             if (ambientPlaying) updateAmbientUI24h();
+            updateFocusModeButton();
             return;
         }
         if (currentChannel === 'lofi') {
