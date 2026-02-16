@@ -982,8 +982,17 @@
             }
             .liked-play-btn svg { width: 22px !important; height: 22px !important; }
             .liked-remove-btn { background: rgba(255,255,255,0.08) !important; border: none !important; }
-            /* Hide background video when viewing favorites on mobile */
+            /* Hide background video and tap zone when viewing favorites on mobile */
             body.view-liked .canvas-video-wrap { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+            body.view-liked .canvas-tap-zone { display: none !important; pointer-events: none !important; }
+            body.view-liked .canvas-track-overlay { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+            /* Hide video and tap zone on category/taglist so they don't obstruct genre interaction */
+            body.view-categories .canvas-video-wrap,
+            body.view-taglist .canvas-video-wrap { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+            body.view-categories .canvas-tap-zone,
+            body.view-taglist .canvas-tap-zone { display: none !important; pointer-events: none !important; }
+            body.view-categories .canvas-track-overlay,
+            body.view-taglist .canvas-track-overlay { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
 
             .queue-row {
                 grid-template-columns: 30px 1fr;
@@ -4357,6 +4366,8 @@
             if (view === 'taglist') { mainStage.classList.add('view-taglist'); currentTagMood = extra || currentTagMood; renderTagList(currentTagMood); }
         }
         document.body.classList.toggle('view-liked', view === 'liked');
+        document.body.classList.toggle('view-categories', view === 'categories');
+        document.body.classList.toggle('view-taglist', view === 'taglist');
         var likedBack = document.getElementById('likedBackBtn');
         var taglistBack = document.getElementById('taglistBackBtn');
         if (likedBack) likedBack.style.display = view === 'liked' ? 'inline-flex' : 'none';
