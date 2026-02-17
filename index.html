@@ -342,6 +342,13 @@
         .hero-like-btn.liked .icon-heart-outline { display: none; }
         .hero-like-btn.liked .icon-heart-filled { display: block; }
         .hero-like-btn svg { width: 22px; height: 22px; }
+        .mobile-save-btn { display: none; border: none; background: none; padding: 0; cursor: pointer; color: var(--text-muted); align-items: center; justify-content: center; transition: color 0.2s; }
+        .mobile-save-btn:hover { color: #fff; }
+        .mobile-save-btn.liked { color: #ef4444; }
+        .mobile-save-btn .icon-heart-outline { display: block; }
+        .mobile-save-btn .icon-heart-filled { display: none; }
+        .mobile-save-btn.liked .icon-heart-outline { display: none; }
+        .mobile-save-btn.liked .icon-heart-filled { display: block; }
         body.hero-playing .hero-action-row .play-btn-lg { display: none !important; }
         #visualizer {
             display: block;
@@ -964,6 +971,7 @@
             .hero-like-btn { display: none !important; }
             /* Hide 24/7 badge, show favorite library icon on mobile */
             .stage-header .badge-24-7 { display: none !important; }
+            .mobile-save-btn { display: inline-flex !important; width: 40px; height: 40px; }
             .stage-header-fav-btn { display: inline-flex !important; align-items: center; justify-content: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: var(--text-main); cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
             .stage-header-fav-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); }
             /* Back button: show only on mobile when in liked list */
@@ -1034,7 +1042,8 @@
             .progress-container { display: none; } 
             .deck-buttons { gap: 16px; }
             .deck-btn { display: none; } 
-            .deck-btn.main { display: flex; width: 44px; height: 44px; } 
+            .deck-btn.main { display: flex; width: 44px; height: 44px; order: 2; }
+            #nextBtn.deck-btn { display: flex !important; align-items: center; justify-content: center; width: 44px; height: 44px; order: 1; } 
             
             .deck-volume { display: none; }
 
@@ -1232,6 +1241,10 @@
                 </div>
                 <div class="stage-header-actions" style="display: flex; align-items: center; gap: 12px;">
                     <div class="badge badge-24-7">24/7</div>
+                    <button type="button" class="mobile-save-btn" id="likeBtnMobile" aria-label="Save to Liked" title="Save to Liked">
+                        <svg class="icon-heart-outline" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <svg class="icon-heart-filled" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
                     <button type="button" class="stage-header-fav-btn" id="stageHeaderFavBtn" aria-label="Open Favorites" title="Favorites" style="display: none;">Favorites</button>
                     <button type="button" class="focus-mode-btn" id="focusModeBtn" aria-label="Switch to Focus mode">Focus</button>
                 </div>
@@ -1347,16 +1360,11 @@
             <div class="deck-controls">
                 <div class="deck-buttons">
                     <button class="deck-btn deck-prev-btn" id="deckPrevBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-                    <button type="button" class="deck-btn deck-like-btn" id="likeBtnDeck" aria-label="Like this track" title="Save to Liked">
-                        <svg class="icon-heart-outline" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <svg class="icon-heart-filled" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                    </button>
                     <button class="deck-btn main" id="barPlayBtn">
                         <svg class="icon-play show-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         <svg class="icon-pause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                     </button>
-                    <!-- Next button hidden on mobile via CSS deck-btn class logic -->
-                    <button class="deck-btn" id="nextBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                    <button class="deck-btn" id="nextBtn" aria-label="Next track" title="Next track"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
                 </div>
                 <div class="progress-container">
                     <span id="time-current">0:00</span>
@@ -3063,10 +3071,34 @@
     var catPreloadedForTrack = false;
     var firstTrackCatDone = false;
 
-    /** Deterministic cat image URL for a seed so the same song shows the same cat on all devices (mobile/desktop). */
+    var CAT_CACHE_KEY = 'radiolofi_cat_cache';
+    var CAT_CACHE_MAX = 80;
+
+    function getCatCache() {
+        try {
+            var raw = localStorage.getItem(CAT_CACHE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) { return {}; }
+    }
+    function setCatCache(cache) {
+        try {
+            var keys = Object.keys(cache);
+            while (keys.length > CAT_CACHE_MAX) {
+                delete cache[keys.shift()];
+            }
+            localStorage.setItem(CAT_CACHE_KEY, JSON.stringify(cache));
+        } catch (e) {}
+    }
+
     function catUrlForSeed(seed) {
-        var n = ((seed >>> 0) % 16) + 1;
-        return 'https://placekitten.com/400/400?image=' + n;
+        var page = ((seed >>> 0) % 500);
+        return 'https://api.thecatapi.com/v1/images/search?limit=20&order=ASC&page=' + page;
+    }
+    /** Pick deterministic image from API response so same seed = same cat on all devices */
+    function pickCatUrlFromArray(arr, seed) {
+        if (!arr || !arr.length) return null;
+        var idx = ((seed >>> 0) % arr.length);
+        return (arr[idx] && arr[idx].url) ? arr[idx].url : (arr[0] && arr[0].url) ? arr[0].url : null;
     }
 
     /** Generate a simple random shape as SVG data URL for ambient vinyl (no cats, minimal shapes) */
@@ -3096,15 +3128,47 @@
         el.style.backgroundImage = 'url(' + generateShapeDataUrl(s) + ')';
     }
 
-    /** Load cat preview for a liked song thumb; deterministic URL so same seed = same cat everywhere */
+    /** Load cat preview for a liked song thumb; uses cache or fetches and updates */
     function loadLikedPreview(thumbEl, seed) {
         if (!thumbEl || seed == null) return;
-        thumbEl.style.backgroundImage = 'url(' + catUrlForSeed(seed) + ')';
+        var cache = getCatCache();
+        var sk = String(seed);
+        if (cache[sk]) {
+            thumbEl.style.backgroundImage = 'url(' + cache[sk] + ')';
+            return;
+        }
+        fetch(catUrlForSeed(seed))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                var url = pickCatUrlFromArray(arr, seed);
+                if (url) {
+                    thumbEl.style.backgroundImage = 'url(' + url + ')';
+                    cache[sk] = url;
+                    setCatCache(cache);
+                }
+            })
+            .catch(function() {});
     }
 
     function loadArtistCardCat(bgEl, seed) {
         if (!bgEl || seed == null) return;
-        bgEl.style.backgroundImage = 'url(' + catUrlForSeed(seed) + ')';
+        var cache = getCatCache();
+        var sk = 'artist_' + seed;
+        if (cache[sk]) {
+            bgEl.style.backgroundImage = 'url(' + cache[sk] + ')';
+            return;
+        }
+        fetch(catUrlForSeed(seed))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                var url = pickCatUrlFromArray(arr, seed);
+                if (url) {
+                    bgEl.style.backgroundImage = 'url(' + url + ')';
+                    cache[sk] = url;
+                    setCatCache(cache);
+                }
+            })
+            .catch(function() {});
     }
 
     function preloadCatImage(url) {
@@ -3115,12 +3179,30 @@
 
     function preloadNextCat(seed) {
         if (seed == null) return;
-        nextCatUrl = catUrlForSeed(seed);
-        nextCatSeed = seed;
-        preloadCatImage(nextCatUrl);
+        var cache = getCatCache();
+        var sk = String(seed);
+        if (cache[sk]) {
+            nextCatUrl = cache[sk];
+            nextCatSeed = seed;
+            preloadCatImage(nextCatUrl);
+            return;
+        }
+        fetch(catUrlForSeed(seed))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                var url = pickCatUrlFromArray(arr, seed);
+                if (url) {
+                    nextCatUrl = url;
+                    nextCatSeed = seed;
+                    cache[sk] = nextCatUrl;
+                    setCatCache(cache);
+                    preloadCatImage(nextCatUrl);
+                }
+            })
+            .catch(function() {});
     }
 
-    /** Load vinyl background: cat for lofi, random shapes for ambient. Deterministic URL so same song = same cat on mobile and desktop. */
+    /** Load vinyl background: cat for lofi, random shapes for ambient */
     function loadVinylCat(seed) {
         var el = document.getElementById('vinyl-cat-bg');
         if (!el) return;
@@ -3129,14 +3211,41 @@
             return;
         }
         var s = seed != null ? seed : (state && state.currentSeed != null ? state.currentSeed : 0);
-        var url = (nextCatUrl && nextCatSeed === s) ? nextCatUrl : catUrlForSeed(s);
-        nextCatUrl = null;
-        nextCatSeed = null;
-        el.style.backgroundImage = 'url(' + url + ')';
-        if (state.trackDuration > 0) {
-            var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
-            if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+        if (nextCatUrl && nextCatSeed === s) {
+            el.style.backgroundImage = 'url(' + nextCatUrl + ')';
+            nextCatUrl = null;
+            nextCatSeed = null;
+            if (state.trackDuration > 0) {
+                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+            }
+            return;
         }
+        var cache = getCatCache();
+        var sk = String(s);
+        if (cache[sk]) {
+            el.style.backgroundImage = 'url(' + cache[sk] + ')';
+            if (state.trackDuration > 0) {
+                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+            }
+            return;
+        }
+        fetch(catUrlForSeed(s))
+            .then(function(r) { return r.json(); })
+            .then(function(arr) {
+                var url = pickCatUrlFromArray(arr, s);
+                if (url) {
+                    el.style.backgroundImage = 'url(' + url + ')';
+                    cache[sk] = url;
+                    setCatCache(cache);
+                    if (state.trackDuration > 0) {
+                        var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+                        if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
+                    }
+                }
+            })
+            .catch(function() {});
     }
 
     /** Show current song on load (no play required) */
@@ -4168,6 +4277,7 @@
         var onLiked = currentChannel === 'lofi' && state.isPlaying && isLiked(state.currentSeed);
         var deckBtn = document.getElementById('likeBtnDeck');
         var heroBtn = document.getElementById('likeBtnHero');
+        var mobileBtn = document.getElementById('likeBtnMobile');
         if (deckBtn) {
             deckBtn.classList.toggle('liked', !!onLiked);
             deckBtn.title = onLiked ? 'Remove from Liked' : 'Save to Liked';
@@ -4177,6 +4287,11 @@
             heroBtn.classList.toggle('liked', !!onLiked);
             heroBtn.title = onLiked ? 'Remove from Liked' : 'Save to Liked';
             heroBtn.setAttribute('aria-label', onLiked ? 'Remove from Liked' : 'Save to Liked');
+        }
+        if (mobileBtn) {
+            mobileBtn.classList.toggle('liked', !!onLiked);
+            mobileBtn.title = onLiked ? 'Remove from Liked' : 'Save to Liked';
+            mobileBtn.setAttribute('aria-label', onLiked ? 'Remove from Liked' : 'Save to Liked');
         }
     }
 
@@ -5499,6 +5614,8 @@
     if (likeBtnDeckEl) likeBtnDeckEl.addEventListener('click', handleLikeClick);
     var likeBtnHeroEl = document.getElementById('likeBtnHero');
     if (likeBtnHeroEl) likeBtnHeroEl.addEventListener('click', handleLikeClick);
+    var likeBtnMobileEl = document.getElementById('likeBtnMobile');
+    if (likeBtnMobileEl) likeBtnMobileEl.addEventListener('click', handleLikeClick);
 
     document.getElementById('focusModeBtn').addEventListener('click', function() {
         if (currentChannel === 'ambient' && currentAmbientMood === 'focus') {
