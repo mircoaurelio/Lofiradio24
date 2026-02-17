@@ -3063,28 +3063,10 @@
     var catPreloadedForTrack = false;
     var firstTrackCatDone = false;
 
-    var CAT_CACHE_KEY = 'radiolofi_cat_cache';
-    var CAT_CACHE_MAX = 80;
-
-    function getCatCache() {
-        try {
-            var raw = localStorage.getItem(CAT_CACHE_KEY);
-            return raw ? JSON.parse(raw) : {};
-        } catch (e) { return {}; }
-    }
-    function setCatCache(cache) {
-        try {
-            var keys = Object.keys(cache);
-            while (keys.length > CAT_CACHE_MAX) {
-                delete cache[keys.shift()];
-            }
-            localStorage.setItem(CAT_CACHE_KEY, JSON.stringify(cache));
-        } catch (e) {}
-    }
-
+    /** Deterministic cat image URL for a seed so the same song shows the same cat on all devices (mobile/desktop). */
     function catUrlForSeed(seed) {
-        var page = ((seed >>> 0) % 500);
-        return 'https://api.thecatapi.com/v1/images/search?limit=1&order=ASC&page=' + page;
+        var n = ((seed >>> 0) % 16) + 1;
+        return 'https://placekitten.com/400/400?image=' + n;
     }
 
     /** Generate a simple random shape as SVG data URL for ambient vinyl (no cats, minimal shapes) */
@@ -3114,47 +3096,15 @@
         el.style.backgroundImage = 'url(' + generateShapeDataUrl(s) + ')';
     }
 
-    /** Load cat preview for a liked song thumb; uses cache or fetches and updates */
+    /** Load cat preview for a liked song thumb; deterministic URL so same seed = same cat everywhere */
     function loadLikedPreview(thumbEl, seed) {
         if (!thumbEl || seed == null) return;
-        var cache = getCatCache();
-        var sk = String(seed);
-        if (cache[sk]) {
-            thumbEl.style.backgroundImage = 'url(' + cache[sk] + ')';
-            return;
-        }
-        fetch(catUrlForSeed(seed))
-            .then(function(r) { return r.json(); })
-            .then(function(arr) {
-                if (arr && arr[0] && arr[0].url) {
-                    var url = arr[0].url;
-                    thumbEl.style.backgroundImage = 'url(' + url + ')';
-                    cache[sk] = url;
-                    setCatCache(cache);
-                }
-            })
-            .catch(function() {});
+        thumbEl.style.backgroundImage = 'url(' + catUrlForSeed(seed) + ')';
     }
 
     function loadArtistCardCat(bgEl, seed) {
         if (!bgEl || seed == null) return;
-        var cache = getCatCache();
-        var sk = 'artist_' + seed;
-        if (cache[sk]) {
-            bgEl.style.backgroundImage = 'url(' + cache[sk] + ')';
-            return;
-        }
-        fetch(catUrlForSeed(seed))
-            .then(function(r) { return r.json(); })
-            .then(function(arr) {
-                if (arr && arr[0] && arr[0].url) {
-                    var url = arr[0].url;
-                    bgEl.style.backgroundImage = 'url(' + url + ')';
-                    cache[sk] = url;
-                    setCatCache(cache);
-                }
-            })
-            .catch(function() {});
+        bgEl.style.backgroundImage = 'url(' + catUrlForSeed(seed) + ')';
     }
 
     function preloadCatImage(url) {
@@ -3165,29 +3115,12 @@
 
     function preloadNextCat(seed) {
         if (seed == null) return;
-        var cache = getCatCache();
-        var sk = String(seed);
-        if (cache[sk]) {
-            nextCatUrl = cache[sk];
-            nextCatSeed = seed;
-            preloadCatImage(nextCatUrl);
-            return;
-        }
-        fetch(catUrlForSeed(seed))
-            .then(function(r) { return r.json(); })
-            .then(function(arr) {
-                if (arr && arr[0] && arr[0].url) {
-                    nextCatUrl = arr[0].url;
-                    nextCatSeed = seed;
-                    cache[sk] = nextCatUrl;
-                    setCatCache(cache);
-                    preloadCatImage(nextCatUrl);
-                }
-            })
-            .catch(function() {});
+        nextCatUrl = catUrlForSeed(seed);
+        nextCatSeed = seed;
+        preloadCatImage(nextCatUrl);
     }
 
-    /** Load vinyl background: cat for lofi, random shapes for ambient */
+    /** Load vinyl background: cat for lofi, random shapes for ambient. Deterministic URL so same song = same cat on mobile and desktop. */
     function loadVinylCat(seed) {
         var el = document.getElementById('vinyl-cat-bg');
         if (!el) return;
@@ -3196,41 +3129,14 @@
             return;
         }
         var s = seed != null ? seed : (state && state.currentSeed != null ? state.currentSeed : 0);
-        if (nextCatUrl && nextCatSeed === s) {
-            el.style.backgroundImage = 'url(' + nextCatUrl + ')';
-            nextCatUrl = null;
-            nextCatSeed = null;
-            if (state.trackDuration > 0) {
-                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
-                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
-            }
-            return;
+        var url = (nextCatUrl && nextCatSeed === s) ? nextCatUrl : catUrlForSeed(s);
+        nextCatUrl = null;
+        nextCatSeed = null;
+        el.style.backgroundImage = 'url(' + url + ')';
+        if (state.trackDuration > 0) {
+            var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
+            if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
         }
-        var cache = getCatCache();
-        var sk = String(s);
-        if (cache[sk]) {
-            el.style.backgroundImage = 'url(' + cache[sk] + ')';
-            if (state.trackDuration > 0) {
-                var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
-                if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
-            }
-            return;
-        }
-        fetch(catUrlForSeed(s))
-            .then(function(r) { return r.json(); })
-            .then(function(arr) {
-                if (arr && arr[0] && arr[0].url) {
-                    var url = arr[0].url;
-                    el.style.backgroundImage = 'url(' + url + ')';
-                    cache[sk] = url;
-                    setCatCache(cache);
-                    if (state.trackDuration > 0) {
-                        var nextTrack = getCurrentTrackInfo(state.trackStartTime + state.trackDuration + 1);
-                        if (nextTrack && nextTrack.seed != null) preloadNextCat(nextTrack.seed);
-                    }
-                }
-            })
-            .catch(function() {});
     }
 
     /** Show current song on load (no play required) */
